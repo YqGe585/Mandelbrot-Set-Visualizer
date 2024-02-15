@@ -22,8 +22,6 @@ always @(posedge clk) begin
         zr <= 0;
     end 
     else begin
-        // zi_squared <= zi * zi;
-        // zr_squared <= zr * zr;
 
         //z_sum <= zr_squared + zi_squared;
 
