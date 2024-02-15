@@ -1,0 +1,73 @@
+m255
+K4
+z2
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+dC:/intelFPGA_lite/lab1/lab1modelsim
+vmandelbrot_iterate
+Z0 !s110 1707945911
+!i10b 1
+!s100 NDjd3zKSe203bYn_zUGLX3
+I[3MN[@QJRW:K0I3eXa[3?2
+Z1 VDg1SIo80bB@j0V0VzS_@n1
+Z2 dC:/intelFPGA_lite/lab2
+Z3 w1707945259
+Z4 8C:/intelFPGA_lite/lab2/mandel.v
+Z5 FC:/intelFPGA_lite/lab2/mandel.v
+L0 1
+Z6 OV;L;10.5b;63
+r1
+!s85 0
+31
+Z7 !s108 1707945911.000000
+Z8 !s107 C:/intelFPGA_lite/lab2/mandel.v|
+Z9 !s90 -reportprogress|300|-work|work|-stats=none|C:/intelFPGA_lite/lab2/mandel.v|
+!i113 1
+Z10 o-work work
+Z11 tCvgOpt 0
+vmandelbrot_iterate_tb
+!s110 1707946219
+!i10b 1
+!s100 Q?:n3mi1LLTDCB?KAGE]A1
+I]98gV;zUl1D<Z@Y86CS;C1
+R1
+R2
+w1707946210
+8C:\intelFPGA_lite\lab2\testbench.v
+FC:\intelFPGA_lite\lab2\testbench.v
+L0 3
+R6
+r1
+!s85 0
+31
+!s108 1707946219.000000
+!s107 C:\intelFPGA_lite\lab2\testbench.v|
+!s90 -reportprogress|300|-work|work|-stats=none|C:\intelFPGA_lite\lab2\testbench.v|
+!i113 1
+R10
+R11
+vsigned_mult
+R0
+!i10b 1
+!s100 X8:Xg9<[nHRzDM<3BV1ik0
+Ih29ANhPNU@JLc2gV8jn@h0
+R1
+R2
+R3
+R4
+R5
+L0 45
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!i113 1
+R10
+R11
