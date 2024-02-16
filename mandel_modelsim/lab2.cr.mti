@@ -1,16 +1,8 @@
-C:/intelFPGA_lite/lab2/testbench.v {1 {vlog -work work -stats=none {C:\intelFPGA_lite\lab2\testbench.v}
+C:/intelFPGA_lite/lab2/Mandelbrot-Set-Visualizer/mandel_modelsim/testbench.v {1 {vlog -work work -stats=none {C:\intelFPGA_lite\lab2\Mandelbrot-Set-Visualizer\mandel_modelsim\testbench.v}
 Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
 -- Compiling module mandelbrot_iterate_tb
 
 Top level modules:
 	mandelbrot_iterate_tb
-
-} {} {}} C:/intelFPGA_lite/lab2/mandel.v {1 {vlog -work work -stats=none C:/intelFPGA_lite/lab2/mandel.v
-Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
--- Compiling module mandelbrot_iterate
--- Compiling module signed_mult
-
-Top level modules:
-	mandelbrot_iterate
 
 } {} {}}

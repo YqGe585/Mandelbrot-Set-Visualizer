@@ -3,6 +3,7 @@ module mandelbrot_iterate(
     input [15:0] max_iterations,
     output reg [15:0] iterations,
     input clk,
+    output ite_flag,
     input reset
 );
 
@@ -22,20 +23,15 @@ always @(posedge clk) begin
         zr <= 0;
     end 
     else begin
-
-        //z_sum <= zr_squared + zi_squared;
-
         if (iterations < max_iterations && (zr_squared + zi_squared) <= (4 << 23)) begin
             zr <= zr_squared - zi_squared + cr;
             zi <= (zrmulzi << 1) + ci;
-
-            // zi <= zi_temp;
-            // zr <= zr_temp;
-
             iterations <= iterations + 1;
         end
     end
 end
+
+assign ite_flag = (zr_squared + zi_squared) <= (4 << 23);
 
 endmodule
 
@@ -50,3 +46,4 @@ module signed_mult (out, a, b);
 	// select bits for 7.20 fixed point
 	assign out = {mult_out[53], mult_out[48:23]};
 endmodule
+

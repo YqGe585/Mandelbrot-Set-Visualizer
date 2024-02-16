@@ -9,58 +9,58 @@ z2
 cModel Technology
 dC:/intelFPGA_lite/lab1/lab1modelsim
 vmandelbrot_iterate
-Z0 !s110 1707945911
+Z0 !s110 1708113957
 !i10b 1
-!s100 NDjd3zKSe203bYn_zUGLX3
-I[3MN[@QJRW:K0I3eXa[3?2
+!s100 O>g]Az`UUENlgfc2ARTd:3
+IXVLLc@A73@QEzbI@?IdeZ0
 Z1 VDg1SIo80bB@j0V0VzS_@n1
-Z2 dC:/intelFPGA_lite/lab2
-Z3 w1707945259
-Z4 8C:/intelFPGA_lite/lab2/mandel.v
-Z5 FC:/intelFPGA_lite/lab2/mandel.v
+Z2 dC:/intelFPGA_lite/lab2/Mandelbrot-Set-Visualizer/mandel_modelsim
+Z3 w1708113915
+Z4 8C:/intelFPGA_lite/lab2/Mandelbrot-Set-Visualizer/mandel_modelsim/mandel.v
+Z5 FC:/intelFPGA_lite/lab2/Mandelbrot-Set-Visualizer/mandel_modelsim/mandel.v
 L0 1
 Z6 OV;L;10.5b;63
 r1
 !s85 0
 31
-Z7 !s108 1707945911.000000
-Z8 !s107 C:/intelFPGA_lite/lab2/mandel.v|
-Z9 !s90 -reportprogress|300|-work|work|-stats=none|C:/intelFPGA_lite/lab2/mandel.v|
+Z7 !s108 1708113957.000000
+Z8 !s107 C:/intelFPGA_lite/lab2/Mandelbrot-Set-Visualizer/mandel_modelsim/mandel.v|
+Z9 !s90 -reportprogress|300|-work|work|-stats=none|C:/intelFPGA_lite/lab2/Mandelbrot-Set-Visualizer/mandel_modelsim/mandel.v|
 !i113 1
 Z10 o-work work
 Z11 tCvgOpt 0
 vmandelbrot_iterate_tb
-!s110 1707946219
+R0
 !i10b 1
-!s100 Q?:n3mi1LLTDCB?KAGE]A1
-I]98gV;zUl1D<Z@Y86CS;C1
+!s100 ZX?>a_Zn=A7DgWohc?=Fm3
+IA`a]CTBIG]YVM4Gn1b7zK0
 R1
 R2
-w1707946210
-8C:\intelFPGA_lite\lab2\testbench.v
-FC:\intelFPGA_lite\lab2\testbench.v
+w1708111696
+8C:\intelFPGA_lite\lab2\Mandelbrot-Set-Visualizer\mandel_modelsim\testbench.v
+FC:\intelFPGA_lite\lab2\Mandelbrot-Set-Visualizer\mandel_modelsim\testbench.v
 L0 3
 R6
 r1
 !s85 0
 31
-!s108 1707946219.000000
-!s107 C:\intelFPGA_lite\lab2\testbench.v|
-!s90 -reportprogress|300|-work|work|-stats=none|C:\intelFPGA_lite\lab2\testbench.v|
+R7
+!s107 C:\intelFPGA_lite\lab2\Mandelbrot-Set-Visualizer\mandel_modelsim\testbench.v|
+!s90 -reportprogress|300|-work|work|-stats=none|C:\intelFPGA_lite\lab2\Mandelbrot-Set-Visualizer\mandel_modelsim\testbench.v|
 !i113 1
 R10
 R11
 vsigned_mult
 R0
 !i10b 1
-!s100 X8:Xg9<[nHRzDM<3BV1ik0
-Ih29ANhPNU@JLc2gV8jn@h0
+!s100 _Bcd3FVJbV`jhzfYP]Q=j2
+IjRDA=D`UU:D60NLU3@58Z0
 R1
 R2
 R3
 R4
 R5
-L0 45
+L0 40
 R6
 r1
 !s85 0
