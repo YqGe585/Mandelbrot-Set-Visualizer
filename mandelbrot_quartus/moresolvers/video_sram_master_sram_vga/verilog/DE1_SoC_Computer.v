@@ -390,10 +390,10 @@ HexDigit Digit3(HEX3, hex3_hex0[15:12]);
 // Controls for Qsys sram slave exported in system module
 //=======================================================
 wire [31:0] sram_readdata [26:0] ;
-reg [31:0] data_buffer [26:0];
-reg [31:0] sram_writedata [26:0] ;
-reg [7:0] sram_address [26:0]; 
-reg sram_write [26:0] ;
+reg [31:0] data_buffer [NUM_MODULES-1:0];
+reg [31:0] sram_writedata [NUM_MODULES-1:0] ;
+reg [7:0] sram_address [NUM_MODULES-1:0]; 
+reg sram_write [NUM_MODULES-1:0] ;
 wire sram_clken = 1'b1;
 wire sram_chipselect = 1'b1;
 reg [7:0] state ;
@@ -404,37 +404,38 @@ reg [31:0] timer ; // may need to throttle write-rate
 //=======================================================
 // Controls for VGA memory
 //=======================================================
-wire [31:0] vga_out_base_address = 32'h0000_0000 ;  // vga base addr
-reg [7:0] vga_sram_writedata ;
-reg [31:0] vga_sram_address; 
-reg vga_sram_write ;
-wire vga_sram_clken = 1'b1;
-wire vga_sram_chipselect = 1'b1;
+//wire [31:0] vga_out_base_address = 32'h0000_0000 ;  // vga base addr
+//reg [7:0] vga_sram_writedata ;
+//reg [31:0] vga_sram_address; 
+//reg vga_sram_write ;
+//wire vga_sram_clken = 1'b1;
+//wire vga_sram_chipselect = 1'b1;
 
 //=======================================================
 // pixel address is
-reg [9:0] vga_x_cood [26:0] ; 
-reg [9:0] vga_y_cood [26:0];
-wire [7:0] pixel_color [26:0];
-wire ite_flag [26:0] ;
-reg signed [26:0] real_part [26:0]; 
-reg signed [26:0] imag_part [26:0];
-reg reset_solver[26:0];
+reg [9:0] vga_x_cood [NUM_MODULES-1:0] ; 
+reg [9:0] vga_y_cood [NUM_MODULES-1:0];
+wire [7:0] pixel_color [NUM_MODULES-1:0];
+wire ite_flag [NUM_MODULES-1:0] ;
+reg signed [26:0] real_part [NUM_MODULES-1:0]; 
+reg signed [26:0] imag_part [NUM_MODULES-1:0];
+reg reset_solver[NUM_MODULES-1:0];
 reg done;
 
-reg [1:0] current_state [26:0]; 
-reg [1:0] next_state [26:0]; 
-reg [31:0] time_counter [26:0] ;
+reg [1:0] current_state [NUM_MODULES-1:0]; 
+reg [1:0] next_state [NUM_MODULES-1:0]; 
+reg [31:0] time_counter [NUM_MODULES-1:0] ;
 wire CLOCK_25;
+wire CLOCK_75;
 wire [9:0] next_x;
 wire [9:0] next_y;
-reg [31:0] write_addr [26:0]; 
-reg [31:0] read_addr [26:0];
-reg [7:0] write_color [26:0];
-wire [7:0] read_color [26:0];
-reg we [26:0];
+reg [31:0] write_addr [NUM_MODULES-1:0]; 
+reg [31:0] read_addr [NUM_MODULES-1:0];
+reg [7:0] write_color [NUM_MODULES-1:0];
+wire [7:0] read_color [NUM_MODULES-1:0];
+reg we [NUM_MODULES-1:0];
 wire [31:0] global_addr;
-reg [7:0] data_out;
+wire [7:0] data_out;
 
 parameter REAL_MIN = 27'd117440512;
 parameter REAL_MAX = 27'd125829120;
@@ -442,33 +443,89 @@ parameter IMAG_MIN = 27'd125829120;
 parameter IMAG_MAX = 27'd8388608;
 parameter SCREEN_WIDTH = 640;
 parameter SCREEN_HEIGHT = 480;
-parameter NUM_MODULES = 27;
-parameter MODULE_SIZE = 11379;  
-parameter ADDR_WIDTH = 15;  
+parameter NUM_MODULES = 28;
+parameter MEM_SIZE = 11040;  
+parameter ADDR_WIDTH = 15;
+parameter BLOCK_ROW = 92;
+parameter BLOCK_COL = 120;
+parameter SOLVER_ROW = 7;
+parameter SOLVER_COL = 4;
+
+wire [26:0] x_step = 27'd39321;
+wire [26:0] y_step = 27'd34952;
+wire [31:0] xmod;
+wire [31:0] ymod;
+wire [31:0] xdiv;
+wire [31:0] ydiv;
+wire [31:0] module_select;
+wire [31:0] local_addr;
+reg [7:0] temp_color [NUM_MODULES-1:0];
+wire [31:0] x_module_select;
+wire [31:0] y_module_select;
+wire [31:0] x_local_addr;
+wire [31:0] y_local_addr;
+
+assign x_module_select = next_x % SOLVER_ROW;
+assign y_module_select = next_y % SOLVER_COL;
+assign x_local_addr = next_x / SOLVER_ROW;
+assign y_local_addr = next_y / SOLVER_COL;
+assign module_select = x_module_select + y_module_select * SOLVER_ROW;
+assign local_addr = x_local_addr + y_local_addr * BLOCK_ROW;
+
+//integer j;
+//always @(posedge CLOCK_50) begin
+//    for (j = 0; j < NUM_MODULES; j = j + 1) begin
+//		  if (j == module_select) begin
+//				read_addr[j] <= xdiv + ydiv * BLOCK_ROW;
+//				data_out <= read_color[j];
+//		  end
+//		  else begin 
+//				read_addr[j] <= 32'b0;
+//		  end
+//    end
+//end
+//assign read_addr[module_select[$clog2(MEM_SIZE)-1:0]] = local_addr;
+//assign data_out = read_color[module_select[$clog2(MEM_SIZE)-1:0]];
+
+//always @(posedge CLOCK_75) begin
+//	read_addr[module_select[5:0]] <= local_addr;
+//	data_out <= read_color[module_select[5:0]];
+//end
+
+genvar j;
+generate
+	for(j=0;j<NUM_MODULES;j=j+1) begin: VGA_mux
+		always @(*) begin
+			if(j==module_select) begin
+				read_addr[j[5:0]] = local_addr;
+				temp_color[j[5:0]] = read_color[module_select[5:0]];
+			end
+			else begin
+				read_addr[j] = 32'b0;
+				temp_color[j] = 8'b0;
+			end
+		end
+	end
+endgenerate
+
+assign data_out = temp_color[module_select[5:0]];
 
 
-assign global_addr = {22'b0, next_x} + ({22'b0,next_y}*640);
-wire [$clog2(27)-1:0] module_select = global_addr / 11379;
-wire [$clog2(11379)-1:0] local_addr = global_addr % 11379;
-
-integer j;
-always @(posedge CLOCK_50) begin
-    for (j = 0; j < NUM_MODULES; j = j + 1) begin
-        read_addr[j] <= global_addr % MODULE_SIZE;
-    end
-    data_out <= read_color[global_addr / MODULE_SIZE]; 
-end
-
+//always @(*) begin
+//	case (module_select[$clog2(MEM_SIZE)-1:0])
+//		
+//	endcase
+//end
 genvar i;
 generate 
-	for (i=0;i<27;i=i+1) begin : gen_solvers
+	for (i=0;i<NUM_MODULES;i=i+1) begin : gen_solvers
 		mandelbrot_iterate insts(
 			 .ci(imag_part[i]), 
 			 .cr(real_part[i]), 
 			 .max_iterations(10'd1000), 
 			 .ite_flag(ite_flag[i]), 
 			 .color_reg(pixel_color[i]),
-			 .clk(CLOCK_50), 
+			 .clk(CLOCK_75), 
 			 .reset(reset_solver[i])
 		);
 		M10K M1( 
@@ -477,13 +534,13 @@ generate
 			 .write_address(write_addr[i]),
 			 .read_address(read_addr[i]),
 			 .we(we[i]), 
-			 .clk(CLOCK_50),
+			 .clk(CLOCK_75),
 			 .sw(SW[0])
 		);
 		
 
 		// state machine
-		always @(posedge CLOCK_50) begin
+		always @(posedge CLOCK_75) begin
 			 if (~KEY[0]) begin
 				  current_state[i] <= 2'd0;
 			 end else begin
@@ -495,7 +552,7 @@ generate
 		always @(*) begin
 			 case (current_state[i])
 				  2'd0: next_state[i] = 2'd1;
-				  2'd1: next_state[i] = (vga_x_cood[i] == (SCREEN_WIDTH-1) && vga_y_cood[i] == (SCREEN_HEIGHT-1)) ? 2'd2 : 2'd1;
+				  2'd1: next_state[i] = (vga_x_cood[i] >= (BLOCK_ROW*SOLVER_ROW-(7-i%7)) && vga_y_cood[i] >= (BLOCK_COL*SOLVER_COL-(4-i%4))) ? 2'd2 : 2'd1;
 				  2'd2: next_state[i] = 2'd3;
 				  2'd3: next_state[i] = 2'd3;
 				  default: next_state[i] = 2'd0;
@@ -503,42 +560,38 @@ generate
 		end
 
 		// output logic
-		always @(posedge CLOCK_50) begin
+		always @(posedge CLOCK_75) begin
 			 if (current_state[i] == 2'd0) begin
-				  vga_x_cood[i] <= i%3-1;
-				  vga_y_cood[i] <= i%9-1;
+				  vga_x_cood[i] <= i%SOLVER_ROW;
+				  vga_y_cood[i] <= i/SOLVER_ROW;
 				  //done <= 0;
-				  real_part[i] <= REAL_MIN;
-				  imag_part[i] <= IMAG_MAX;
+				  real_part[i] <= REAL_MIN+(i%SOLVER_ROW)*x_step;
+				  imag_part[i] <= IMAG_MAX-(i/SOLVER_ROW)*y_step;
 				  sram_address[i] <= 8'd30 ;
 				  sram_write[i] <= 1'b1 ;
 				  sram_writedata[i] <= 32'd0 ;
 				  time_counter[i] <= 32'b0;
 				  we[i]<=0;
+				  write_addr[i] <= 32'hFFFFFFFF;
 			 end
 			 else if (current_state[i] == 2'd1) begin
 				  sram_address[i] <= 8'd30 ;
 				  sram_write[i] <= 1'b0 ;
 				  sram_writedata[i] <= 32'd0 ;
 				  time_counter[i] <= time_counter[i]+32'b1;
-				  if ((vga_x_cood[i] < SCREEN_WIDTH-1) && ite_flag[i]) begin
-						vga_x_cood[i] <= vga_x_cood[i] + 9;
-						real_part[i] <= real_part[i] + 27'd353889;
-						//vga_sram_address <= vga_out_base_address + {22'b0, vga_x_cood} + ({22'b0,vga_y_cood}*640) ; 
-						//vga_sram_writedata <= pixel_color;
-						write_addr[i] <= {22'b0, vga_x_cood[i]} + ({22'b0,vga_y_cood[i]}*640) ; 
+				  if ((vga_x_cood[i] < BLOCK_ROW*SOLVER_ROW-(7-i%7)) && (vga_y_cood[i] < BLOCK_COL*SOLVER_COL-(4-i%4)) && ite_flag[i]) begin
+						vga_x_cood[i] <= vga_x_cood[i] + SOLVER_ROW;
+						real_part[i] <= real_part[i] + 27'd275247;
+						write_addr[i] <= write_addr[i] + 1 ; 
 						write_color[i] <= pixel_color[i];
 						we[i]<=1'b1;
 						reset_solver[i] <= 1;
-				  end else if ((vga_y_cood[i] < SCREEN_HEIGHT-1) && ite_flag[i]) begin
-						vga_x_cood[i] <= i%3-1;
-						vga_y_cood[i] <= vga_y_cood[i] + 3;
-						real_part[i] <= REAL_MIN;
-						imag_part[i] <= imag_part[i] - 27'd104856;
-						//vga_sram_address <= vga_out_base_address + {22'b0, vga_x_cood} + ({22'b0,vga_y_cood}*640) ; 
-						//vga_sram_writedata <= pixel_color;
-						//vga_sram_write <= 1'b1;
-						write_addr[i] <= {22'b0, vga_x_cood[i]} + ({22'b0,vga_y_cood[i]}*640) ; 
+				  end else if ((vga_x_cood[i] >= BLOCK_ROW*SOLVER_ROW-(7-i%7)) && (vga_y_cood[i] < BLOCK_COL*SOLVER_COL-(4-i%4)) && ite_flag[i]) begin
+						vga_x_cood[i] <= i%SOLVER_ROW;
+						vga_y_cood[i] <= vga_y_cood[i] + SOLVER_COL;
+						real_part[i] <= REAL_MIN+(i%SOLVER_ROW)*x_step;
+						imag_part[i] <= imag_part[i] - 27'd139808;
+						write_addr[i] <= write_addr[i] + 1 ; 
 						write_color[i] <= pixel_color[i];
 						we[i]<=1'b1;
 						reset_solver[i] <=1;
@@ -571,6 +624,13 @@ video_pll pll1 (
 		.refclk(CLOCK_50),   //  refclk.clk
 		.rst(~KEY[0]),      //   reset.reset
 		.outclk_0(CLOCK_25), // outclk0.clk
+		.locked()    //  locked.export
+	);
+	
+pll2 pll2 (
+		.refclk(CLOCK_50),   //  refclk.clk
+		.rst(~KEY[0]),      //   reset.reset
+		.outclk_0(CLOCK_75), // outclk0.clk
 		.locked()    //  locked.export
 	);
 
@@ -767,15 +827,15 @@ endmodule // end top level
 //============================================================
 
 module M10K( 
-    output reg [31:0] q,
-    input [31:0] d,
+    output reg [7:0] q,
+    input [7:0] d,
     input [31:0] write_address, read_address,
     input we, clk,
 	 input sw
 );
 	 // force M10K ram style
 	 // 256 words of 8 bits
-    reg [7:0] mem [11378:0]  /* synthesis ramstyle = "no_rw_check, M10K" */;
+    reg [7:0] mem [11040:0]  /* synthesis ramstyle = "no_rw_check, M10K" */;
 	 reg [31:0] read_addr;
 	 
     always @ (posedge clk) begin
