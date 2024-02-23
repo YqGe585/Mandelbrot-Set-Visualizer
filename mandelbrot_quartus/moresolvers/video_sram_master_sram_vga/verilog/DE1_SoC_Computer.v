@@ -444,15 +444,19 @@ parameter IMAG_MAX = 27'd8388608;
 parameter SCREEN_WIDTH = 640;
 parameter SCREEN_HEIGHT = 480;
 parameter NUM_MODULES = 28;
-parameter MEM_SIZE = 11040;  
+parameter MEM_SIZE = 12000;  //11040
 parameter ADDR_WIDTH = 15;
 parameter BLOCK_ROW = 92;
 parameter BLOCK_COL = 120;
-parameter SOLVER_ROW = 7;
-parameter SOLVER_COL = 4;
+parameter SOLVER_ROW = 27'd7;
+parameter SOLVER_COL = 27'd4;
+parameter x_step = 27'd39321;
+parameter y_step = 27'd34952;
+parameter ROW_X = 27'd275247;
+parameter COL_Y = 27'd139808;
 
-wire [26:0] x_step = 27'd39321;
-wire [26:0] y_step = 27'd34952;
+//wire [26:0] x_step = 27'd39321;
+//wire [26:0] y_step = 27'd34952;
 wire [31:0] xmod;
 wire [31:0] ymod;
 wire [31:0] xdiv;
@@ -464,6 +468,10 @@ wire [31:0] x_module_select;
 wire [31:0] y_module_select;
 wire [31:0] x_local_addr;
 wire [31:0] y_local_addr;
+reg [9:0] offset_addr_x[NUM_MODULES-1:0];
+reg [9:0] offset_addr_y[NUM_MODULES-1:0];
+reg [9:0] offset_real[NUM_MODULES-1:0];
+reg [9:0] offset_imag[NUM_MODULES-1:0];
 
 assign x_module_select = next_x % SOLVER_ROW;
 assign y_module_select = next_y % SOLVER_COL;
@@ -497,8 +505,8 @@ generate
 	for(j=0;j<NUM_MODULES;j=j+1) begin: VGA_mux
 		always @(*) begin
 			if(j==module_select) begin
-				read_addr[j[5:0]] = local_addr;
-				temp_color[j[5:0]] = read_color[module_select[5:0]];
+				read_addr[j] = local_addr;
+				temp_color[j] = read_color[j];
 			end
 			else begin
 				read_addr[j] = 32'b0;
@@ -508,7 +516,8 @@ generate
 	end
 endgenerate
 
-assign data_out = temp_color[module_select[5:0]];
+assign data_out = temp_color[module_select[4:0]];
+
 
 
 //always @(*) begin
@@ -526,7 +535,7 @@ generate
 			 .ite_flag(ite_flag[i]), 
 			 .color_reg(pixel_color[i]),
 			 .clk(CLOCK_75), 
-			 .reset(reset_solver[i])
+			 .reset(reset_solver[i] || (~KEY[0]))
 		);
 		M10K M1( 
 			 .q(read_color[i]),
@@ -540,6 +549,7 @@ generate
 		
 
 		// state machine
+		// next state
 		always @(posedge CLOCK_75) begin
 			 if (~KEY[0]) begin
 				  current_state[i] <= 2'd0;
@@ -552,7 +562,7 @@ generate
 		always @(*) begin
 			 case (current_state[i])
 				  2'd0: next_state[i] = 2'd1;
-				  2'd1: next_state[i] = (vga_x_cood[i] >= (BLOCK_ROW*SOLVER_ROW-(7-i%7)) && vga_y_cood[i] >= (BLOCK_COL*SOLVER_COL-(4-i%4))) ? 2'd2 : 2'd1;
+				  2'd1: next_state[i] = ((offset_addr_x[i] == 10'd637) && (offset_addr_y[i] == 10'd476)) ? 2'd2 : 2'd1;
 				  2'd2: next_state[i] = 2'd3;
 				  2'd3: next_state[i] = 2'd3;
 				  default: next_state[i] = 2'd0;
@@ -562,35 +572,131 @@ generate
 		// output logic
 		always @(posedge CLOCK_75) begin
 			 if (current_state[i] == 2'd0) begin
-				  vga_x_cood[i] <= i%SOLVER_ROW;
-				  vga_y_cood[i] <= i/SOLVER_ROW;
+				  vga_x_cood[i] <= 10'b0 ;
+				  vga_y_cood[i] <= 10'b0 ;
+				  offset_addr_x[i] <= 10'b0;
+				  offset_addr_y[i] <= 10'b0;
 				  //done <= 0;
-				  real_part[i] <= REAL_MIN+(i%SOLVER_ROW)*x_step;
-				  imag_part[i] <= IMAG_MAX-(i/SOLVER_ROW)*y_step;
+				  case (i)
+				  0:begin real_part[i] <= REAL_MIN; // 39321
+							 imag_part[i] <= IMAG_MAX; end
+				  1:begin real_part[i] <= REAL_MIN+27'd39321;
+							 imag_part[i] <= IMAG_MAX; end
+				  2:begin real_part[i] <= REAL_MIN+27'd78642;
+							 imag_part[i] <= IMAG_MAX; end
+				  3:begin real_part[i] <= REAL_MIN+3*x_step;
+							 imag_part[i] <= IMAG_MAX; end
+				  4:begin real_part[i] <= REAL_MIN+4*x_step;
+							 imag_part[i] <= IMAG_MAX; end
+				  5:begin real_part[i] <= REAL_MIN+5*x_step;
+							 imag_part[i] <= IMAG_MAX; end
+				  6:begin real_part[i] <= REAL_MIN+6*x_step;
+							 imag_part[i] <= IMAG_MAX; end      
+				  7: begin real_part[i] <= REAL_MIN; // 39321
+				    		 imag_part[i] <= IMAG_MAX- y_step; end
+				  8: begin real_part[i] <= REAL_MIN+27'd39321;
+				    		 imag_part[i] <= IMAG_MAX- y_step; end
+				  9: begin real_part[i] <= REAL_MIN+27'd78642;
+				    		 imag_part[i] <= IMAG_MAX-y_step; end
+				  10:begin real_part[i] <= REAL_MIN+3*x_step;
+				    		 imag_part[i] <= IMAG_MAX- y_step; end
+				  11:begin real_part[i] <= REAL_MIN+4*x_step;
+				    		 imag_part[i] <= IMAG_MAX- y_step; end
+				  12:begin real_part[i] <= REAL_MIN+5*x_step;
+				    		 imag_part[i] <= IMAG_MAX- y_step; end
+				  13:begin real_part[i] <= REAL_MIN+6*x_step;
+				    		 imag_part[i] <= IMAG_MAX- y_step; end      
+				  14:begin real_part[i] <= REAL_MIN; // 39321
+				     	 imag_part[i] <= IMAG_MAX- 2* y_step; end
+				  15:begin real_part[i] <= REAL_MIN+27'd39321;
+				     	 imag_part[i] <= IMAG_MAX- 2* y_step; end
+				  16:begin real_part[i] <= REAL_MIN+27'd78642;
+				     	 imag_part[i] <= IMAG_MAX- 2*y_step; end
+				  17:begin real_part[i] <= REAL_MIN+3*x_step;
+				     	 imag_part[i] <= IMAG_MAX- 2*y_step; end
+				  18:begin real_part[i] <= REAL_MIN+4*x_step;
+				     	 imag_part[i] <= IMAG_MAX- 2*y_step; end
+				  19:begin real_part[i] <= REAL_MIN+5*x_step;
+				     	 imag_part[i] <= IMAG_MAX- 2*y_step; end
+				  20:begin real_part[i] <= REAL_MIN+6*x_step;
+				     	 imag_part[i] <= IMAG_MAX- 2*y_step; end 
+				  21:begin real_part[i] <= REAL_MIN; // 39321
+				     	 imag_part[i] <= IMAG_MAX- 3* y_step; end
+				  22:begin real_part[i] <= REAL_MIN+27'd39321;
+				     	 imag_part[i] <= IMAG_MAX- 3*y_step; end
+				  23:begin real_part[i] <= REAL_MIN+27'd78642;
+				     	 imag_part[i] <= IMAG_MAX- 3*y_step; end
+				  24:begin real_part[i] <= REAL_MIN+3*x_step;
+				     	 imag_part[i] <= IMAG_MAX- 3*y_step; end
+				  25:begin real_part[i] <= REAL_MIN+4*x_step;
+				     	 imag_part[i] <= IMAG_MAX- 3*y_step; end
+				  26:begin real_part[i] <= REAL_MIN+5*x_step;
+				     	 imag_part[i] <= IMAG_MAX- 3*y_step; end
+				  27:begin real_part[i] <= REAL_MIN+6*x_step;
+				     	 imag_part[i] <= IMAG_MAX- 3*y_step; end 
+				  default:begin real_part[i] <= REAL_MIN; // 39321
+							 imag_part[i] <= IMAG_MAX; end
+				  endcase 
+//				  real_part[i] <= REAL_MIN+(i[26:0]%SOLVER_ROW)*x_step;
+//				  imag_part[i] <= IMAG_MAX-(i[26:0]/SOLVER_ROW)*y_step;
+				  offset_real[i] <= REAL_MIN;
+				  offset_imag[i] <= IMAG_MAX;
 				  sram_address[i] <= 8'd30 ;
 				  sram_write[i] <= 1'b1 ;
 				  sram_writedata[i] <= 32'd0 ;
 				  time_counter[i] <= 32'b0;
-				  we[i]<=0;
-				  write_addr[i] <= 32'hFFFFFFFF;
+				  we[i]<=1'b0;
+				  write_addr[i] <= 32'hFFFFFFFF; // FFFFFFFF
+//				  write_color[i] <= pixel_color[i];
 			 end
 			 else if (current_state[i] == 2'd1) begin
 				  sram_address[i] <= 8'd30 ;
 				  sram_write[i] <= 1'b0 ;
 				  sram_writedata[i] <= 32'd0 ;
 				  time_counter[i] <= time_counter[i]+32'b1;
-				  if ((vga_x_cood[i] < BLOCK_ROW*SOLVER_ROW-(7-i%7)) && (vga_y_cood[i] < BLOCK_COL*SOLVER_COL-(4-i%4)) && ite_flag[i]) begin
-						vga_x_cood[i] <= vga_x_cood[i] + SOLVER_ROW;
-						real_part[i] <= real_part[i] + 27'd275247;
+				  if ((offset_addr_x[i] < 10'd637) && (offset_addr_y[i] <= 476) && ite_flag[i]) begin
+				  
+						offset_addr_x[i] <= offset_addr_x[i] + SOLVER_ROW;
+						vga_x_cood[i] <= offset_addr_x[i] + i%SOLVER_ROW;
+						
+						offset_real[i] <= offset_real[i] + ROW_X;
+						real_part[i] <= real_part[i] + ROW_X;
+						//real_part[i] <= offset_real[i] + ROW_X + (i%SOLVER_ROW)*x_step;
+						//real_part[i] <= real_part[i] + SOLVER_ROW * x_step;
+						
+						offset_imag[i] <= offset_imag[i];
+						//imag_part[i] <= offset_imag[i] - (i/SOLVER_ROW)*y_step;
+						
 						write_addr[i] <= write_addr[i] + 1 ; 
-						write_color[i] <= pixel_color[i];
+						if(((offset_addr_x[i] == 10'd280) || (offset_addr_x[i] == 10'd294) || (offset_addr_x[i] == 10'd420) ) && SW[1]) begin
+							write_color[i] <= 8'b_011_001_00;
+						end
+						else if ((i%7==0)&&(i/7==0)&&SW[2]) begin
+							write_color[i] <= 8'b_111_111_11;
+						end
+						else begin
+							write_color[i] <= pixel_color[i];
+						end
 						we[i]<=1'b1;
 						reset_solver[i] <= 1;
-				  end else if ((vga_x_cood[i] >= BLOCK_ROW*SOLVER_ROW-(7-i%7)) && (vga_y_cood[i] < BLOCK_COL*SOLVER_COL-(4-i%4)) && ite_flag[i]) begin
-						vga_x_cood[i] <= i%SOLVER_ROW;
-						vga_y_cood[i] <= vga_y_cood[i] + SOLVER_COL;
-						real_part[i] <= REAL_MIN+(i%SOLVER_ROW)*x_step;
-						imag_part[i] <= imag_part[i] - 27'd139808;
+				  end 
+				  else if ((offset_addr_x[i] == 10'd637) && (offset_addr_y[i] <= 476) && ite_flag[i]) begin
+				  
+						offset_addr_x[i] <= 10'b0;
+						vga_x_cood[i] <= offset_addr_x[i] + i%SOLVER_ROW;
+						
+						offset_addr_y[i] <= offset_addr_y[i] + SOLVER_COL;
+						vga_y_cood[i] <= offset_addr_y[i] + i/SOLVER_ROW;
+						
+						//real_part[i] <= REAL_MIN + (offset_addr_x[i] + SOLVER_ROW + i%SOLVER_ROW) * x_step;
+						offset_real[i] <= REAL_MIN;
+						real_part[i] <= REAL_MIN + (i%SOLVER_ROW)*x_step;
+						
+						offset_imag[i] <= offset_imag[i] - COL_Y;
+						imag_part[i] <= imag_part[i] - COL_Y;
+						//imag_part[i] <= offset_imag[i] - COL_Y - (i/SOLVER_ROW)*y_step;//27'd139808
+						//imag_part[i] <= IMAG_MAX - (offset_addr_y[i] + SOLVER_COL + i/SOLVER_ROW) * y_step;
+						
 						write_addr[i] <= write_addr[i] + 1 ; 
 						write_color[i] <= pixel_color[i];
 						we[i]<=1'b1;
@@ -608,6 +714,7 @@ generate
 				  sram_write[i] <= 1'b1 ;
 				  sram_writedata[i] <= 32'd1 ;
 				  we[i]<=0;
+				  write_addr[i] <= 32'hFFFFFFFF;
 			 end
 			 else if (current_state[i] == 2'd3) begin			
 				  //done <= 1;
@@ -835,7 +942,7 @@ module M10K(
 );
 	 // force M10K ram style
 	 // 256 words of 8 bits
-    reg [7:0] mem [11040:0]  /* synthesis ramstyle = "no_rw_check, M10K" */;
+    reg [7:0] mem [12000:0]  /* synthesis ramstyle = "no_rw_check, M10K" */;
 	 reg [31:0] read_addr;
 	 
     always @ (posedge clk) begin
@@ -909,7 +1016,7 @@ module mandelbrot_iterate(
     input signed [26:0] ci, cr,
     input [15:0] max_iterations,
     input clk,
-    output ite_flag,
+    output reg ite_flag,
 	output reg [7:0] color_reg,
     input reset
 );
@@ -967,10 +1074,12 @@ always @(posedge clk) begin
 	else begin
 	color_reg <= 8'b_010_100_10 ;
 	end
+	
+	ite_flag <= ((zr_squared + zi_squared) >= (4 << 23)) | (iterations >= max_iterations);
+
 end
 
-assign ite_flag = ((zr_squared + zi_squared) >= (4 << 23)) | (iterations >= max_iterations);
-
+	
 endmodule
 
 

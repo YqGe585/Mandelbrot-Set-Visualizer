@@ -468,6 +468,7 @@ always @(posedge CLOCK_50) begin
 		  sram_writedata <= 32'd0 ;
 		  time_counter <= 32'b0;
 		  we<=0;
+		  write_addr <= 32'hFFFFFFFF ; 
     end
 	 else if (current_state == 2'd1) begin
 		  sram_address <= 8'd2 ;
@@ -479,7 +480,8 @@ always @(posedge CLOCK_50) begin
 				real_part <= real_part + 27'd39321;
 				//vga_sram_address <= vga_out_base_address + {22'b0, vga_x_cood} + ({22'b0,vga_y_cood}*640) ; 
 				//vga_sram_writedata <= pixel_color;
-				write_addr <= {22'b0, vga_x_cood} + ({22'b0,vga_y_cood}*640) ; 
+				//write_addr <= {22'b0, vga_x_cood} + ({22'b0,vga_y_cood}*640) ; 
+				write_addr <= write_addr+1 ; 
 				write_color <= pixel_color;
 				we<=1'b1;
 				reset_solver <= 1;
@@ -491,7 +493,8 @@ always @(posedge CLOCK_50) begin
 				//vga_sram_address <= vga_out_base_address + {22'b0, vga_x_cood} + ({22'b0,vga_y_cood}*640) ; 
 				//vga_sram_writedata <= pixel_color;
 				//vga_sram_write <= 1'b1;
-				write_addr <= {22'b0, vga_x_cood} + ({22'b0,vga_y_cood}*640) ; 
+				//write_addr <= {22'b0, vga_x_cood} + ({22'b0,vga_y_cood}*640) ; 
+				write_addr <= write_addr+1 ;
 				write_color <= pixel_color;
 				we<=1'b1;
 				reset_solver <=1;
@@ -821,7 +824,7 @@ module mandelbrot_iterate(
     input signed [26:0] ci, cr,
     input [15:0] max_iterations,
     input clk,
-    output ite_flag,
+    output reg ite_flag,
 	output reg [7:0] color_reg,
     input reset
 );
@@ -879,9 +882,11 @@ always @(posedge clk) begin
 	else begin
 	color_reg <= 8'b_010_100_10 ;
 	end
+	
+	ite_flag <= ((zr_squared + zi_squared) >= (4 << 23)) | (iterations >= max_iterations);
+
 end
 
-assign ite_flag = ((zr_squared + zi_squared) >= (4 << 23)) | (iterations >= max_iterations);
 
 endmodule
 
