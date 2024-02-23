@@ -426,7 +426,7 @@ reg [1:0] current_state [NUM_MODULES-1:0];
 reg [1:0] next_state [NUM_MODULES-1:0]; 
 reg [31:0] time_counter [NUM_MODULES-1:0] ;
 wire CLOCK_25;
-wire CLOCK_75;
+wire CLOCK_100;
 wire [9:0] next_x;
 wire [9:0] next_y;
 reg [31:0] write_addr [NUM_MODULES-1:0]; 
@@ -495,7 +495,7 @@ assign local_addr = x_local_addr + y_local_addr * BLOCK_ROW;
 //assign read_addr[module_select[$clog2(MEM_SIZE)-1:0]] = local_addr;
 //assign data_out = read_color[module_select[$clog2(MEM_SIZE)-1:0]];
 
-//always @(posedge CLOCK_75) begin
+//always @(posedge CLOCK_100) begin
 //	read_addr[module_select[5:0]] <= local_addr;
 //	data_out <= read_color[module_select[5:0]];
 //end
@@ -534,8 +534,10 @@ generate
 			 .max_iterations(10'd1000), 
 			 .ite_flag(ite_flag[i]), 
 			 .color_reg(pixel_color[i]),
-			 .clk(CLOCK_75), 
-			 .reset(reset_solver[i] || (~KEY[0]))
+			 .clk(CLOCK_100), 
+			 .reset(reset_solver[i] || (~KEY[0])),
+			 .i(i),
+			 .choice(SW[1])
 		);
 		M10K M1( 
 			 .q(read_color[i]),
@@ -543,14 +545,14 @@ generate
 			 .write_address(write_addr[i]),
 			 .read_address(read_addr[i]),
 			 .we(we[i]), 
-			 .clk(CLOCK_75),
+			 .clk(CLOCK_100),
 			 .sw(SW[0])
 		);
 		
 
 		// state machine
 		// next state
-		always @(posedge CLOCK_75) begin
+		always @(posedge CLOCK_50) begin
 			 if (~KEY[0]) begin
 				  current_state[i] <= 2'd0;
 			 end else begin
@@ -570,7 +572,7 @@ generate
 		end
 
 		// output logic
-		always @(posedge CLOCK_75) begin
+		always @(posedge CLOCK_50) begin
 			 if (current_state[i] == 2'd0) begin
 				  vga_x_cood[i] <= 10'b0 ;
 				  vga_y_cood[i] <= 10'b0 ;
@@ -597,7 +599,7 @@ generate
 				  8: begin real_part[i] <= REAL_MIN+27'd39321;
 				    		 imag_part[i] <= IMAG_MAX- y_step; end
 				  9: begin real_part[i] <= REAL_MIN+27'd78642;
-				    		 imag_part[i] <= IMAG_MAX-y_step; end
+				    		 imag_part[i] <= IMAG_MAX- y_step; end
 				  10:begin real_part[i] <= REAL_MIN+3*x_step;
 				    		 imag_part[i] <= IMAG_MAX- y_step; end
 				  11:begin real_part[i] <= REAL_MIN+4*x_step;
@@ -668,11 +670,29 @@ generate
 						//imag_part[i] <= offset_imag[i] - (i/SOLVER_ROW)*y_step;
 						
 						write_addr[i] <= write_addr[i] + 1 ; 
-						if(((offset_addr_x[i] == 10'd280) || (offset_addr_x[i] == 10'd294) || (offset_addr_x[i] == 10'd420) ) && SW[1]) begin
+						//write_color[i] <= pixel_color[i];
+						if(((offset_addr_x[i] == 10'd280) || (offset_addr_x[i] == 10'd294) || (offset_addr_x[i] == 10'd420) ) && SW[9]) begin
 							write_color[i] <= 8'b_011_001_00;
 						end
-						else if ((i%7==0)&&(i/7==0)&&SW[2]) begin
+						else if (((i%7==0)||(i/7==0))&&SW[2]) begin
 							write_color[i] <= 8'b_111_111_11;
+						end
+						else if (SW[3]) begin
+							if(offset_addr_x[i] % 10'd5 == 10'd0) begin
+								write_color[i] <= 8'b_11111111;
+							end
+							else if(offset_addr_x[i] % 10'd5 == 10'd1) begin
+								write_color[i] <= 8'b_11100000;
+							end
+							else if(offset_addr_x[i] % 10'd5 == 10'd2) begin
+								write_color[i] <= 8'b_00011100;
+							end
+							else if(offset_addr_x[i] % 10'd5 == 10'd3) begin
+								write_color[i] <= 8'b_00000011;
+							end
+							else if(offset_addr_x[i] % 10'd5 == 10'd4) begin
+								write_color[i] <= 8'b_11111100;
+							end
 						end
 						else begin
 							write_color[i] <= pixel_color[i];
@@ -737,7 +757,7 @@ video_pll pll1 (
 pll2 pll2 (
 		.refclk(CLOCK_50),   //  refclk.clk
 		.rst(~KEY[0]),      //   reset.reset
-		.outclk_0(CLOCK_75), // outclk0.clk
+		.outclk_0(CLOCK_100), // outclk0.clk
 		.locked()    //  locked.export
 	);
 
@@ -993,24 +1013,24 @@ endmodule
 // See example 12-16 in 
 // http://people.ece.cornell.edu/land/courses/ece5760/DE1_SOC/HDL_style_qts_qii51007.pdf
 //============================================================
-module MLAB_20_32(
-	output reg signed [31:0] q,
-	input  [31:0] data,
-	input [7:0] readaddr, writeaddr,
-	input wren, clock
-);
-	// force MLAB ram style
-	// 20 words of 32 bits
-	reg signed [31:0] mem [19:0] /* synthesis ramstyle = "no_rw_check, MLAB" */;
-	
-	always @ (posedge clock)
-	begin
-		if (wren) begin
-			mem[writeaddr] <= data;
-		end
-		q <= mem[readaddr];
-	end
-endmodule
+//module MLAB_20_32(
+//	output reg signed [31:0] q,
+//	input  [31:0] data,
+//	input [7:0] readaddr, writeaddr,
+//	input wren, clock
+//);
+//	// force MLAB ram style
+//	// 20 words of 32 bits
+//	reg signed [31:0] mem [19:0] /* synthesis ramstyle = "no_rw_check, MLAB" */;
+//	
+//	always @ (posedge clock)
+//	begin
+//		if (wren) begin
+//			mem[writeaddr] <= data;
+//		end
+//		q <= mem[readaddr];
+//	end
+//endmodule
 
 module mandelbrot_iterate(
     input signed [26:0] ci, cr,
@@ -1018,7 +1038,9 @@ module mandelbrot_iterate(
     input clk,
     output reg ite_flag,
 	output reg [7:0] color_reg,
-    input reset
+    input reset,
+	 input [31:0] i,
+	 input choice
 );
 
 reg signed [26:0] zi, zr;
@@ -1031,10 +1053,11 @@ signed_mult inst2(zr_squared, zr, zr);
 signed_mult inst3(zrmulzi, zr, zi);
 
 always @(posedge clk) begin
-    if (reset) begin
+    if (reset || ite_flag == 1'b1) begin
         iterations <= 0;
         zi <= 0;
         zr <= 0;
+		  ite_flag <= 0;
     end 
     else begin
         if (iterations < max_iterations && (zr_squared + zi_squared) <= (4 << 23)) begin
@@ -1042,13 +1065,13 @@ always @(posedge clk) begin
             zi <= (zrmulzi << 1) + ci;
             iterations <= iterations + 1;
         end
+		  ite_flag <= ((zr_squared + zi_squared) > (4 << 23)) | (iterations >= max_iterations);
     end
-
 	if (iterations >= max_iterations) begin
 	color_reg <= 8'b_000_000_00 ; // black
 	end
 	else if (iterations >= (max_iterations >>> 1)) begin
-	color_reg <= 8'b_011_001_00 ; // white
+	color_reg <= 8'b_011_001_00 ;
 	end
 	else if (iterations >= (max_iterations >>> 2)) begin
 	color_reg <= 8'b_011_001_00 ;
@@ -1074,11 +1097,7 @@ always @(posedge clk) begin
 	else begin
 	color_reg <= 8'b_010_100_10 ;
 	end
-	
-	ite_flag <= ((zr_squared + zi_squared) >= (4 << 23)) | (iterations >= max_iterations);
-
 end
-
 	
 endmodule
 

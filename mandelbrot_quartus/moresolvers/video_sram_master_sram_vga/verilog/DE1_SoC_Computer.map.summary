@@ -1,4 +1,4 @@
-Analysis & Synthesis Status : Successful - Thu Feb 22 22:36:55 2024
+Analysis & Synthesis Status : Successful - Fri Feb 23 16:16:41 2024
 Quartus Prime Version : 18.1.0 Build 625 09/12/2018 SJ Lite Edition
 Revision Name : DE1_SoC_Computer
 Top-level Entity Name : DE1_SoC_Computer
@@ -13,5 +13,5 @@ Total HSSI RX PCSs : 0
 Total HSSI PMA RX Deserializers : 0
 Total HSSI TX PCSs : 0
 Total HSSI PMA TX Serializers : 0
-Total PLLs : 3
+Total PLLs : 2
 Total DLLs : 1
