@@ -389,11 +389,11 @@ HexDigit Digit3(HEX3, hex3_hex0[15:12]);
 //=======================================================
 // Controls for Qsys sram slave exported in system module
 //=======================================================
-wire [31:0] sram_readdata [26:0] ;
+wire [31:0] sram_readdata ;
 reg [31:0] data_buffer [NUM_MODULES-1:0];
-reg [31:0] sram_writedata [NUM_MODULES-1:0] ;
-reg [7:0] sram_address [NUM_MODULES-1:0]; 
-reg sram_write [NUM_MODULES-1:0] ;
+reg [31:0] sram_writedata;
+reg [7:0] sram_address; 
+reg sram_write;
 wire sram_clken = 1'b1;
 wire sram_chipselect = 1'b1;
 reg [7:0] state ;
@@ -420,11 +420,13 @@ wire ite_flag [NUM_MODULES-1:0] ;
 reg signed [26:0] real_part [NUM_MODULES-1:0]; 
 reg signed [26:0] imag_part [NUM_MODULES-1:0];
 reg reset_solver[NUM_MODULES-1:0];
-reg done;
+reg [NUM_MODULES-1:0] done ;
+reg max_done;
 
 reg [1:0] current_state [NUM_MODULES-1:0]; 
 reg [1:0] next_state [NUM_MODULES-1:0]; 
 reg [31:0] time_counter [NUM_MODULES-1:0] ;
+reg [31:0] max_counter;
 wire CLOCK_25;
 wire CLOCK_100;
 wire [9:0] next_x;
@@ -472,6 +474,7 @@ reg [9:0] offset_addr_x[NUM_MODULES-1:0];
 reg [9:0] offset_addr_y[NUM_MODULES-1:0];
 reg [9:0] offset_real[NUM_MODULES-1:0];
 reg [9:0] offset_imag[NUM_MODULES-1:0];
+reg [4:0] index;
 
 assign x_module_select = next_x % SOLVER_ROW;
 assign y_module_select = next_y % SOLVER_COL;
@@ -552,7 +555,7 @@ generate
 
 		// state machine
 		// next state
-		always @(posedge CLOCK_50) begin
+		always @(posedge CLOCK_100) begin
 			 if (~KEY[0]) begin
 				  current_state[i] <= 2'd0;
 			 end else begin
@@ -564,21 +567,20 @@ generate
 		always @(*) begin
 			 case (current_state[i])
 				  2'd0: next_state[i] = 2'd1;
-				  2'd1: next_state[i] = ((offset_addr_x[i] == 10'd637) && (offset_addr_y[i] == 10'd476)) ? 2'd2 : 2'd1;
-				  2'd2: next_state[i] = 2'd3;
-				  2'd3: next_state[i] = 2'd3;
+				  2'd1: next_state[i] = (offset_addr_y[i] > 10'd476) ? 2'd2 : 2'd1;
+				  2'd2: next_state[i] = max_done? 2'd0: 2'd2;
 				  default: next_state[i] = 2'd0;
 			 endcase
 		end
 
 		// output logic
-		always @(posedge CLOCK_50) begin
+		always @(posedge CLOCK_100) begin
 			 if (current_state[i] == 2'd0) begin
 				  vga_x_cood[i] <= 10'b0 ;
 				  vga_y_cood[i] <= 10'b0 ;
 				  offset_addr_x[i] <= 10'b0;
 				  offset_addr_y[i] <= 10'b0;
-				  //done <= 0;
+				  done[i] <= 1'b0;
 				  case (i)
 				  0:begin real_part[i] <= REAL_MIN; // 39321
 							 imag_part[i] <= IMAG_MAX; end
@@ -643,18 +645,17 @@ generate
 //				  imag_part[i] <= IMAG_MAX-(i[26:0]/SOLVER_ROW)*y_step;
 				  offset_real[i] <= REAL_MIN;
 				  offset_imag[i] <= IMAG_MAX;
-				  sram_address[i] <= 8'd30 ;
-				  sram_write[i] <= 1'b1 ;
-				  sram_writedata[i] <= 32'd0 ;
+
 				  time_counter[i] <= 32'b0;
 				  we[i]<=1'b0;
 				  write_addr[i] <= 32'hFFFFFFFF; // FFFFFFFF
 //				  write_color[i] <= pixel_color[i];
+				  //index <= 0;
 			 end
 			 else if (current_state[i] == 2'd1) begin
-				  sram_address[i] <= 8'd30 ;
-				  sram_write[i] <= 1'b0 ;
-				  sram_writedata[i] <= 32'd0 ;
+//				  sram_address[i] <= 8'd30 ;
+//				  sram_write[i] <= 1'b0 ;
+//				  sram_writedata[i] <= 32'd0 ;
 				  time_counter[i] <= time_counter[i]+32'b1;
 				  if ((offset_addr_x[i] < 10'd637) && (offset_addr_y[i] <= 476) && ite_flag[i]) begin
 				  
@@ -729,23 +730,58 @@ generate
 			 end 
 			 else if (current_state[i] == 2'd2) begin
 				  time_counter[i]<=time_counter[i];
-				  //done <= 1;
-				  sram_address[i] <= 8'd30 ;
-				  sram_write[i] <= 1'b1 ;
-				  sram_writedata[i] <= 32'd1 ;
+				  done[i] <= 1;
+//				  sram_address[i] <= 8'd30 ;
+//				  sram_write[i] <= 1'b1 ;
+//				  sram_writedata[i] <= 32'd1 ;
 				  we[i]<=0;
 				  write_addr[i] <= 32'hFFFFFFFF;
 			 end
-			 else if (current_state[i] == 2'd3) begin			
-				  //done <= 1;
-				  sram_address[i] <= i ;
-				  sram_write[i] <= 1'b1 ;
-				  sram_writedata[i] <= time_counter[i] ;
-				  we[i]<=0;
-			 end
+//			 else if (current_state[i] == 2'd3) begin			
+//				  done[i] <= 1;
+////				  sram_address[i] <= i[7:0] ;
+////				  sram_write[i] <= 1'b1 ;
+////				  sram_writedata[i] <= time_counter[i] ;
+//				  we[i]<=0;
+//			 end
 		end
 	end
 endgenerate
+
+always @(posedge CLOCK_100) begin
+	if(~KEY[0]) begin
+		index <= 0;
+		max_counter <= 0;
+		max_done <= 0 ;
+	end
+	else begin
+		if(done == 28'hFFFFFFF) begin
+			if(index < NUM_MODULES) begin
+				max_done <= 0 ;
+				if(time_counter[index] > max_counter) begin
+					max_counter <= time_counter[index];
+				end
+				else begin
+					max_counter <= max_counter;
+				end
+				index <= index + 1;
+			end
+			else begin
+				max_done <= 1;
+				max_counter <= max_counter;
+				sram_address <= 8'd1 ;
+				sram_write<= 1'b1 ;
+				sram_writedata <= max_counter ;
+			end
+		end
+		else begin
+			max_counter <= max_counter;
+			sram_address <= 8'd1 ;
+			sram_write<= 1'b0 ;
+			sram_writedata <= max_counter ;
+		end
+	end
+end
 
 video_pll pll1 (
 		.refclk(CLOCK_50),   //  refclk.clk
@@ -793,12 +829,12 @@ Computer_System The_System (
 	.system_pll_ref_reset_reset			(1'b0),
 	
 	// SRAM shared block with HPS
-	.onchip_sram_s1_address               (sram_address[26]),               
+	.onchip_sram_s1_address               (sram_address),               
 	.onchip_sram_s1_clken                 (sram_clken),                 
 	.onchip_sram_s1_chipselect            (sram_chipselect),            
-	.onchip_sram_s1_write                 (sram_write[26]),                 
-	.onchip_sram_s1_readdata              (sram_readdata[26]),              
-	.onchip_sram_s1_writedata             (sram_writedata[26]),             
+	.onchip_sram_s1_write                 (sram_write),                 
+	.onchip_sram_s1_readdata              (sram_readdata),              
+	.onchip_sram_s1_writedata             (sram_writedata),             
 	.onchip_sram_s1_byteenable            (4'b1111), 
 	
 //	//  sram to video
