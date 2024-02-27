@@ -1,5 +1,5 @@
 Flow report for DE1_SoC_Computer
-Mon Feb 26 15:53:32 2024
+Mon Feb 26 22:03:04 2024
 Quartus Prime Version 18.1.0 Build 625 09/12/2018 SJ Lite Edition
 
 
@@ -40,15 +40,15 @@ refer to the applicable agreement for further details.
 +-------------------------------------------------------------------------------+
 ; Flow Summary                                                                  ;
 +---------------------------------+---------------------------------------------+
-; Flow Status                     ; Successful - Mon Feb 26 15:52:58 2024       ;
+; Flow Status                     ; Successful - Mon Feb 26 22:02:28 2024       ;
 ; Quartus Prime Version           ; 18.1.0 Build 625 09/12/2018 SJ Lite Edition ;
 ; Revision Name                   ; DE1_SoC_Computer                            ;
 ; Top-level Entity Name           ; DE1_SoC_Computer                            ;
 ; Family                          ; Cyclone V                                   ;
 ; Device                          ; 5CSEMA5F31C6                                ;
 ; Timing Models                   ; Final                                       ;
-; Logic utilization (in ALMs)     ; 7,939 / 32,070 ( 25 % )                     ;
-; Total registers                 ; 6087                                        ;
+; Logic utilization (in ALMs)     ; 9,012 / 32,070 ( 28 % )                     ;
+; Total registers                 ; 8046                                        ;
 ; Total pins                      ; 368 / 457 ( 81 % )                          ;
 ; Total virtual pins              ; 0                                           ;
 ; Total block memory bits         ; 2,696,416 / 4,065,280 ( 66 % )              ;
@@ -67,7 +67,7 @@ refer to the applicable agreement for further details.
 +-------------------+---------------------+
 ; Option            ; Setting             ;
 +-------------------+---------------------+
-; Start date & time ; 02/26/2024 15:46:25 ;
+; Start date & time ; 02/26/2024 21:55:26 ;
 ; Main task         ; Compilation         ;
 ; Revision Name     ; DE1_SoC_Computer    ;
 +-------------------+---------------------+
@@ -78,7 +78,7 @@ refer to the applicable agreement for further details.
 +-------------------------------------+-------------------------------------------------------------------------------+---------------+------------------------------------------+------------+
 ; Assignment Name                     ; Value                                                                         ; Default Value ; Entity Name                              ; Section Id ;
 +-------------------------------------+-------------------------------------------------------------------------------+---------------+------------------------------------------+------------+
-; COMPILER_SIGNATURE_ID               ; 211267926427867.170898038208756                                               ; --            ; --                                       ; --         ;
+; COMPILER_SIGNATURE_ID               ; 211267926428565.170900252314640                                               ; --            ; --                                       ; --         ;
 ; ENABLE_SIGNALTAP                    ; On                                                                            ; --            ; --                                       ; --         ;
 ; HPS_ISW_FILE                        ; Computer_System/synthesis/submodules/sequencer/alt_types.pre.h                ; --            ; Computer_System_ARM_A9_HPS_hps_io_border ; --         ;
 ; HPS_ISW_FILE                        ; Computer_System/synthesis/submodules/sequencer/emif.pre.xml                   ; --            ; Computer_System_ARM_A9_HPS_hps_io_border ; --         ;
@@ -142,11 +142,11 @@ refer to the applicable agreement for further details.
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 ; Module Name          ; Elapsed Time ; Average Processors Used ; Peak Virtual Memory ; Total CPU Time (on all processors) ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
-; Analysis & Synthesis ; 00:00:33     ; 4.9                     ; 5243 MB             ; 00:02:13                           ;
-; Fitter               ; 00:03:18     ; 1.5                     ; 8742 MB             ; 00:20:59                           ;
-; Assembler            ; 00:00:12     ; 1.0                     ; 5063 MB             ; 00:00:10                           ;
-; Timing Analyzer      ; 00:00:32     ; 3.0                     ; 6105 MB             ; 00:01:27                           ;
-; Total                ; 00:04:35     ; --                      ; --                  ; 00:24:49                           ;
+; Analysis & Synthesis ; 00:00:35     ; 4.8                     ; 5319 MB             ; 00:02:15                           ;
+; Fitter               ; 00:03:46     ; 1.5                     ; 8781 MB             ; 00:24:26                           ;
+; Assembler            ; 00:00:11     ; 1.0                     ; 5094 MB             ; 00:00:11                           ;
+; Timing Analyzer      ; 00:00:34     ; 3.3                     ; 6156 MB             ; 00:01:42                           ;
+; Total                ; 00:05:06     ; --                      ; --                  ; 00:28:34                           ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 
 
@@ -155,10 +155,10 @@ refer to the applicable agreement for further details.
 +----------------------+------------------+------------+------------+----------------+
 ; Module Name          ; Machine Hostname ; OS Name    ; OS Version ; Processor type ;
 +----------------------+------------------+------------+------------+----------------+
-; Analysis & Synthesis ; en-ec-lph238-55  ; Windows 10 ; 10.0       ; x86_64         ;
-; Fitter               ; en-ec-lph238-55  ; Windows 10 ; 10.0       ; x86_64         ;
-; Assembler            ; en-ec-lph238-55  ; Windows 10 ; 10.0       ; x86_64         ;
-; Timing Analyzer      ; en-ec-lph238-55  ; Windows 10 ; 10.0       ; x86_64         ;
+; Analysis & Synthesis ; en-ec-lph238-50  ; Windows 10 ; 10.0       ; x86_64         ;
+; Fitter               ; en-ec-lph238-50  ; Windows 10 ; 10.0       ; x86_64         ;
+; Assembler            ; en-ec-lph238-50  ; Windows 10 ; 10.0       ; x86_64         ;
+; Timing Analyzer      ; en-ec-lph238-50  ; Windows 10 ; 10.0       ; x86_64         ;
 +----------------------+------------------+------------+------------+----------------+
 
 
