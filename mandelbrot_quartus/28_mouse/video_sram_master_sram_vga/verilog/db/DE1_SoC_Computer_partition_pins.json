@@ -4,23 +4,15 @@
 			"name" : "Top",
 			"pins" : [
 				{
-					"name" : "VGA_R[5]",
-					"strict" : false
-				},
-				{
-					"name" : "VGA_R[6]",
-					"strict" : false
-				},
-				{
-					"name" : "VGA_R[7]",
-					"strict" : false
-				},
-				{
 					"name" : "VGA_B[6]",
 					"strict" : false
 				},
 				{
 					"name" : "VGA_B[7]",
+					"strict" : false
+				},
+				{
+					"name" : "VGA_BLANK_N",
 					"strict" : false
 				},
 				{
@@ -36,11 +28,19 @@
 					"strict" : false
 				},
 				{
-					"name" : "VGA_BLANK_N",
+					"name" : "VGA_HS",
 					"strict" : false
 				},
 				{
-					"name" : "VGA_HS",
+					"name" : "VGA_R[5]",
+					"strict" : false
+				},
+				{
+					"name" : "VGA_R[6]",
+					"strict" : false
+				},
+				{
+					"name" : "VGA_R[7]",
 					"strict" : false
 				},
 				{
@@ -48,7 +48,87 @@
 					"strict" : false
 				},
 				{
-					"name" : "CLOCK_50",
+					"name" : "HEX0[0]",
+					"strict" : false
+				},
+				{
+					"name" : "HEX0[1]",
+					"strict" : false
+				},
+				{
+					"name" : "HEX0[2]",
+					"strict" : false
+				},
+				{
+					"name" : "HEX0[3]",
+					"strict" : false
+				},
+				{
+					"name" : "HEX0[4]",
+					"strict" : false
+				},
+				{
+					"name" : "HEX0[5]",
+					"strict" : false
+				},
+				{
+					"name" : "HEX0[6]",
+					"strict" : false
+				},
+				{
+					"name" : "HEX2[0]",
+					"strict" : false
+				},
+				{
+					"name" : "HEX2[1]",
+					"strict" : false
+				},
+				{
+					"name" : "HEX2[2]",
+					"strict" : false
+				},
+				{
+					"name" : "HEX2[3]",
+					"strict" : false
+				},
+				{
+					"name" : "HEX2[4]",
+					"strict" : false
+				},
+				{
+					"name" : "HEX2[5]",
+					"strict" : false
+				},
+				{
+					"name" : "HEX2[6]",
+					"strict" : false
+				},
+				{
+					"name" : "HEX3[0]",
+					"strict" : false
+				},
+				{
+					"name" : "HEX3[1]",
+					"strict" : false
+				},
+				{
+					"name" : "HEX3[2]",
+					"strict" : false
+				},
+				{
+					"name" : "HEX3[3]",
+					"strict" : false
+				},
+				{
+					"name" : "HEX3[4]",
+					"strict" : false
+				},
+				{
+					"name" : "HEX3[5]",
+					"strict" : false
+				},
+				{
+					"name" : "HEX3[6]",
 					"strict" : false
 				},
 				{
@@ -56,7 +136,27 @@
 					"strict" : false
 				},
 				{
-					"name" : "SW[0]",
+					"name" : "KEY[1]",
+					"strict" : false
+				},
+				{
+					"name" : "KEY[2]",
+					"strict" : false
+				},
+				{
+					"name" : "KEY[3]",
+					"strict" : false
+				},
+				{
+					"name" : "CLOCK_50",
+					"strict" : false
+				},
+				{
+					"name" : "SW[8]",
+					"strict" : false
+				},
+				{
+					"name" : "SW[7]",
 					"strict" : false
 				},
 				{

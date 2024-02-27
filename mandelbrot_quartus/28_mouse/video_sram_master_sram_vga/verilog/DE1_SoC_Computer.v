@@ -364,13 +364,13 @@ wire			[15: 0]	hex3_hex0;
 //assign HEX1 = ~hex3_hex0[14: 8];
 //assign HEX2 = ~hex3_hex0[22:16];
 //assign HEX3 = ~hex3_hex0[30:24];
-assign HEX4 = 7'b1111111;
-assign HEX5 = 7'b1111111;
+//assign HEX4 = 7'b1111111;
+//assign HEX5 = 7'b1111111;
 
-HexDigit Digit0(HEX0, hex3_hex0[3:0]);
-HexDigit Digit1(HEX1, hex3_hex0[7:4]);
-HexDigit Digit2(HEX2, hex3_hex0[11:8]);
-HexDigit Digit3(HEX3, hex3_hex0[15:12]);
+//HexDigit Digit0(HEX0, hex3_hex0[3:0]);
+//HexDigit Digit1(HEX1, hex3_hex0[7:4]);
+//HexDigit Digit2(HEX2, hex3_hex0[11:8]);
+//HexDigit Digit3(HEX3, hex3_hex0[15:12]);
 
 //=======================================================
 // SRAM/VGA state machine
@@ -427,6 +427,7 @@ reg [1:0] current_state [NUM_MODULES-1:0];
 reg [1:0] next_state [NUM_MODULES-1:0]; 
 reg [31:0] time_counter [NUM_MODULES-1:0] ;
 reg [31:0] max_counter;
+reg [31:0] max_counter_hex;
 wire CLOCK_25;
 wire CLOCK_100;
 wire [9:0] next_x;
@@ -452,13 +453,11 @@ parameter BLOCK_ROW = 92;
 parameter BLOCK_COL = 120;
 parameter SOLVER_ROW = 27'd7;
 parameter SOLVER_COL = 27'd4;
-parameter x_step = 27'd39321;
-parameter y_step = 27'd34952;
-parameter ROW_X = 27'd275247;
-parameter COL_Y = 27'd139808;
+//parameter x_step = 27'd39321;
+//parameter y_step = 27'd34952;
+//parameter ROW_X = 27'd275247;
+//parameter COL_Y = 27'd139808;
 
-//wire [26:0] x_step = 27'd39321;
-//wire [26:0] y_step = 27'd34952;
 wire [31:0] xmod;
 wire [31:0] ymod;
 wire [31:0] xdiv;
@@ -475,6 +474,25 @@ reg [9:0] offset_addr_y[NUM_MODULES-1:0];
 reg [9:0] offset_real[NUM_MODULES-1:0];
 reg [9:0] offset_imag[NUM_MODULES-1:0];
 reg [4:0] index;
+
+reg signed [26:0] ROW_X [NUM_MODULES-1:0];
+reg signed [26:0] COL_Y [NUM_MODULES-1:0];
+reg signed [26:0] rst_value_real [NUM_MODULES-1:0];
+reg signed [26:0] rst_value_imag [NUM_MODULES-1:0];
+reg signed [26:0] x_step = 27'd39321;
+reg signed [26:0] y_step = 27'd34952;
+reg signed [80:0] x_step_81 = {27'd0,27'd39321,27'd0};
+reg signed [80:0] y_step_81 = {27'd0,27'd34952,27'd0};
+
+reg [3:0] KEY_CURRENT;
+
+
+HexDigit Digit0(HEX0, KEY);
+HexDigit Digit1(HEX1, hex3_hex0[7:4]);
+HexDigit Digit2(HEX2, (max_counter_hex/100000)%10);
+HexDigit Digit3(HEX3, max_counter_hex/1000000);
+HexDigit Digit4(HEX4, NUM_MODULES%10 );
+HexDigit Digit5(HEX5, NUM_MODULES/10 );
 
 
 // use next_x and next_y to index into M10K memory
@@ -517,8 +535,7 @@ generate
 			 .color_reg(pixel_color[i]),
 			 .clk(CLOCK_100), 
 			 .reset(reset_solver[i] || (~KEY[0])),
-			 .i(i),
-			 .choice(SW[1])
+			 .i(i)
 		);
 		M10K M1( 
 			 .q(read_color[i]),
@@ -526,8 +543,7 @@ generate
 			 .write_address(write_addr[i]),
 			 .read_address(read_addr[i]),
 			 .we(we[i]), 
-			 .clk(CLOCK_100),
-			 .sw(SW[0])
+			 .clk(CLOCK_100)
 		);
 		
 
@@ -559,68 +575,72 @@ generate
 				  offset_addr_x[i] <= 10'b0;
 				  offset_addr_y[i] <= 10'b0;
 				  done[i] <= 1'b0;
-				  case (i)
-				  0:begin real_part[i] <= REAL_MIN; // 39321
-							 imag_part[i] <= IMAG_MAX; end
-				  1:begin real_part[i] <= REAL_MIN+27'd39321;
-							 imag_part[i] <= IMAG_MAX; end
-				  2:begin real_part[i] <= REAL_MIN+27'd78642;
-							 imag_part[i] <= IMAG_MAX; end
-				  3:begin real_part[i] <= REAL_MIN+3*x_step;
-							 imag_part[i] <= IMAG_MAX; end
-				  4:begin real_part[i] <= REAL_MIN+4*x_step;
-							 imag_part[i] <= IMAG_MAX; end
-				  5:begin real_part[i] <= REAL_MIN+5*x_step;
-							 imag_part[i] <= IMAG_MAX; end
-				  6:begin real_part[i] <= REAL_MIN+6*x_step;
-							 imag_part[i] <= IMAG_MAX; end      
-				  7: begin real_part[i] <= REAL_MIN; // 39321
-				    		 imag_part[i] <= IMAG_MAX- y_step; end
-				  8: begin real_part[i] <= REAL_MIN+27'd39321;
-				    		 imag_part[i] <= IMAG_MAX- y_step; end
-				  9: begin real_part[i] <= REAL_MIN+27'd78642;
-				    		 imag_part[i] <= IMAG_MAX- y_step; end
-				  10:begin real_part[i] <= REAL_MIN+3*x_step;
-				    		 imag_part[i] <= IMAG_MAX- y_step; end
-				  11:begin real_part[i] <= REAL_MIN+4*x_step;
-				    		 imag_part[i] <= IMAG_MAX- y_step; end
-				  12:begin real_part[i] <= REAL_MIN+5*x_step;
-				    		 imag_part[i] <= IMAG_MAX- y_step; end
-				  13:begin real_part[i] <= REAL_MIN+6*x_step;
-				    		 imag_part[i] <= IMAG_MAX- y_step; end      
-				  14:begin real_part[i] <= REAL_MIN; // 39321
-				     	 imag_part[i] <= IMAG_MAX- 2* y_step; end
-				  15:begin real_part[i] <= REAL_MIN+27'd39321;
-				     	 imag_part[i] <= IMAG_MAX- 2* y_step; end
-				  16:begin real_part[i] <= REAL_MIN+27'd78642;
-				     	 imag_part[i] <= IMAG_MAX- 2*y_step; end
-				  17:begin real_part[i] <= REAL_MIN+3*x_step;
-				     	 imag_part[i] <= IMAG_MAX- 2*y_step; end
-				  18:begin real_part[i] <= REAL_MIN+4*x_step;
-				     	 imag_part[i] <= IMAG_MAX- 2*y_step; end
-				  19:begin real_part[i] <= REAL_MIN+5*x_step;
-				     	 imag_part[i] <= IMAG_MAX- 2*y_step; end
-				  20:begin real_part[i] <= REAL_MIN+6*x_step;
-				     	 imag_part[i] <= IMAG_MAX- 2*y_step; end 
-				  21:begin real_part[i] <= REAL_MIN; // 39321
-				     	 imag_part[i] <= IMAG_MAX- 3* y_step; end
-				  22:begin real_part[i] <= REAL_MIN+27'd39321;
-				     	 imag_part[i] <= IMAG_MAX- 3*y_step; end
-				  23:begin real_part[i] <= REAL_MIN+27'd78642;
-				     	 imag_part[i] <= IMAG_MAX- 3*y_step; end
-				  24:begin real_part[i] <= REAL_MIN+3*x_step;
-				     	 imag_part[i] <= IMAG_MAX- 3*y_step; end
-				  25:begin real_part[i] <= REAL_MIN+4*x_step;
-				     	 imag_part[i] <= IMAG_MAX- 3*y_step; end
-				  26:begin real_part[i] <= REAL_MIN+5*x_step;
-				     	 imag_part[i] <= IMAG_MAX- 3*y_step; end
-				  27:begin real_part[i] <= REAL_MIN+6*x_step;
-				     	 imag_part[i] <= IMAG_MAX- 3*y_step; end 
-				  default:begin real_part[i] <= REAL_MIN; // 39321
-							 imag_part[i] <= IMAG_MAX; end
-				  endcase 
-//				  real_part[i] <= REAL_MIN+(i[26:0]%SOLVER_ROW)*x_step;
-//				  imag_part[i] <= IMAG_MAX-(i[26:0]/SOLVER_ROW)*y_step;
+//				  case (i)
+//				  0:begin real_part[i] <= REAL_MIN; // 39321
+//							 imag_part[i] <= IMAG_MAX; end
+//				  1:begin real_part[i] <= REAL_MIN+27'd39321;
+//							 imag_part[i] <= IMAG_MAX; end
+//				  2:begin real_part[i] <= REAL_MIN+27'd78642;
+//							 imag_part[i] <= IMAG_MAX; end
+//				  3:begin real_part[i] <= REAL_MIN+3*x_step;
+//							 imag_part[i] <= IMAG_MAX; end
+//				  4:begin real_part[i] <= REAL_MIN+4*x_step;
+//							 imag_part[i] <= IMAG_MAX; end
+//				  5:begin real_part[i] <= REAL_MIN+5*x_step;
+//							 imag_part[i] <= IMAG_MAX; end
+//				  6:begin real_part[i] <= REAL_MIN+6*x_step;
+//							 imag_part[i] <= IMAG_MAX; end      
+//				  7: begin real_part[i] <= REAL_MIN; // 39321
+//				    		 imag_part[i] <= IMAG_MAX- y_step; end
+//				  8: begin real_part[i] <= REAL_MIN+27'd39321;
+//				    		 imag_part[i] <= IMAG_MAX- y_step; end
+//				  9: begin real_part[i] <= REAL_MIN+27'd78642;
+//				    		 imag_part[i] <= IMAG_MAX- y_step; end
+//				  10:begin real_part[i] <= REAL_MIN+3*x_step;
+//				    		 imag_part[i] <= IMAG_MAX- y_step; end
+//				  11:begin real_part[i] <= REAL_MIN+4*x_step;
+//				    		 imag_part[i] <= IMAG_MAX- y_step; end
+//				  12:begin real_part[i] <= REAL_MIN+5*x_step;
+//				    		 imag_part[i] <= IMAG_MAX- y_step; end
+//				  13:begin real_part[i] <= REAL_MIN+6*x_step;
+//				    		 imag_part[i] <= IMAG_MAX- y_step; end      
+//				  14:begin real_part[i] <= REAL_MIN; // 39321
+//				     	 imag_part[i] <= IMAG_MAX- 2* y_step; end
+//				  15:begin real_part[i] <= REAL_MIN+27'd39321;
+//				     	 imag_part[i] <= IMAG_MAX- 2* y_step; end
+//				  16:begin real_part[i] <= REAL_MIN+27'd78642;
+//				     	 imag_part[i] <= IMAG_MAX- 2*y_step; end
+//				  17:begin real_part[i] <= REAL_MIN+3*x_step;
+//				     	 imag_part[i] <= IMAG_MAX- 2*y_step; end
+//				  18:begin real_part[i] <= REAL_MIN+4*x_step;
+//				     	 imag_part[i] <= IMAG_MAX- 2*y_step; end
+//				  19:begin real_part[i] <= REAL_MIN+5*x_step;
+//				     	 imag_part[i] <= IMAG_MAX- 2*y_step; end
+//				  20:begin real_part[i] <= REAL_MIN+6*x_step;
+//				     	 imag_part[i] <= IMAG_MAX- 2*y_step; end 
+//				  21:begin real_part[i] <= REAL_MIN; // 39321
+//				     	 imag_part[i] <= IMAG_MAX- 3* y_step; end
+//				  22:begin real_part[i] <= REAL_MIN+27'd39321;
+//				     	 imag_part[i] <= IMAG_MAX- 3*y_step; end
+//				  23:begin real_part[i] <= REAL_MIN+27'd78642;
+//				     	 imag_part[i] <= IMAG_MAX- 3*y_step; end
+//				  24:begin real_part[i] <= REAL_MIN+3*x_step;
+//				     	 imag_part[i] <= IMAG_MAX- 3*y_step; end
+//				  25:begin real_part[i] <= REAL_MIN+4*x_step;
+//				     	 imag_part[i] <= IMAG_MAX- 3*y_step; end
+//				  26:begin real_part[i] <= REAL_MIN+5*x_step;
+//				     	 imag_part[i] <= IMAG_MAX- 3*y_step; end
+//				  27:begin real_part[i] <= REAL_MIN+6*x_step;
+//				     	 imag_part[i] <= IMAG_MAX- 3*y_step; end 
+//				  default:begin real_part[i] <= REAL_MIN; // 39321
+//							 imag_part[i] <= IMAG_MAX; end
+//				  endcase 
+				  rst_value_real[i] <= REAL_MIN + (i%SOLVER_ROW)*x_step;
+				  rst_value_imag[i] <= IMAG_MAX + (i/SOLVER_ROW)*y_step;
+				  real_part[i] <= REAL_MIN+(i[26:0]%SOLVER_ROW)*x_step;
+				  imag_part[i] <= IMAG_MAX-(i[26:0]/SOLVER_ROW)*y_step;
+				  ROW_X[i] <= x_step * SOLVER_ROW;
+				  COL_Y[i] <= y_step * SOLVER_COL;
 				  offset_real[i] <= REAL_MIN;
 				  offset_imag[i] <= IMAG_MAX;
 
@@ -635,21 +655,35 @@ generate
 //				  sram_write[i] <= 1'b0 ;
 //				  sram_writedata[i] <= 32'd0 ;
 				  time_counter[i] <= time_counter[i]+32'b1;
-				  if ((offset_addr_x[i] < 10'd637) && (offset_addr_y[i] <= 476) && ite_flag[i]) begin
-				  
-						offset_addr_x[i] <= offset_addr_x[i] + SOLVER_ROW;
-						vga_x_cood[i] <= offset_addr_x[i] + i%SOLVER_ROW;
+				  if(ite_flag[i])begin
+						if((offset_addr_x[i] < 10'd637) && (offset_addr_y[i] <= 476)) begin
+							offset_addr_x[i] <= offset_addr_x[i] + SOLVER_ROW;
+							vga_x_cood[i] <= offset_addr_x[i] + i%SOLVER_ROW;
+							
+							offset_real[i] <= offset_real[i] + ROW_X[i];
+							real_part[i] <= real_part[i] + ROW_X[i];
+							
+							offset_imag[i] <= offset_imag[i];
+							
+						end
+						else if ((offset_addr_x[i] == 10'd637) && (offset_addr_y[i] <= 476)) begin
+							offset_addr_x[i] <= 10'b0;
+							vga_x_cood[i] <= offset_addr_x[i] + i%SOLVER_ROW;
+							
+							offset_addr_y[i] <= offset_addr_y[i] + SOLVER_COL;
+							vga_y_cood[i] <= offset_addr_y[i] + i/SOLVER_ROW;
+							
+							offset_real[i] <= REAL_MIN;
+							real_part[i] <= rst_value_real[i];
+							
+							offset_imag[i] <= offset_imag[i] - COL_Y[i];
+							imag_part[i] <= imag_part[i] - COL_Y[i];
+						end
 						
-						offset_real[i] <= offset_real[i] + ROW_X;
-						real_part[i] <= real_part[i] + ROW_X;
-						//real_part[i] <= offset_real[i] + ROW_X + (i%SOLVER_ROW)*x_step;
-						//real_part[i] <= real_part[i] + SOLVER_ROW * x_step;
+						write_addr[i] <= write_addr[i] + 1 ;
+						we[i]<=1'b1;
+						reset_solver[i] <= 1;
 						
-						offset_imag[i] <= offset_imag[i];
-						//imag_part[i] <= offset_imag[i] - (i/SOLVER_ROW)*y_step;
-						
-						write_addr[i] <= write_addr[i] + 1 ; 
-						//write_color[i] <= pixel_color[i];
 						if(((offset_addr_x[i] == 10'd280) || (offset_addr_x[i] == 10'd294) || (offset_addr_x[i] == 10'd420) ) && SW[9]) begin
 							write_color[i] <= 8'b_011_001_00;
 						end
@@ -676,35 +710,83 @@ generate
 						else begin
 							write_color[i] <= pixel_color[i];
 						end
-						we[i]<=1'b1;
-						reset_solver[i] <= 1;
-				  end 
-				  else if ((offset_addr_x[i] == 10'd637) && (offset_addr_y[i] <= 476) && ite_flag[i]) begin
-				  
-						offset_addr_x[i] <= 10'b0;
-						vga_x_cood[i] <= offset_addr_x[i] + i%SOLVER_ROW;
-						
-						offset_addr_y[i] <= offset_addr_y[i] + SOLVER_COL;
-						vga_y_cood[i] <= offset_addr_y[i] + i/SOLVER_ROW;
-						
-						//real_part[i] <= REAL_MIN + (offset_addr_x[i] + SOLVER_ROW + i%SOLVER_ROW) * x_step;
-						offset_real[i] <= REAL_MIN;
-						real_part[i] <= REAL_MIN + (i%SOLVER_ROW)*x_step;
-						
-						offset_imag[i] <= offset_imag[i] - COL_Y;
-						imag_part[i] <= imag_part[i] - COL_Y;
-						//imag_part[i] <= offset_imag[i] - COL_Y - (i/SOLVER_ROW)*y_step;//27'd139808
-						//imag_part[i] <= IMAG_MAX - (offset_addr_y[i] + SOLVER_COL + i/SOLVER_ROW) * y_step;
-						
-						write_addr[i] <= write_addr[i] + 1 ; 
-						write_color[i] <= pixel_color[i];
-						we[i]<=1'b1;
-						reset_solver[i] <=1;
 				  end
 				  else begin
-						reset_solver[i] <=0;
+				  		reset_solver[i] <=0;
 						we[i]<=1'b0;
 				  end
+				  
+//				  if ((offset_addr_x[i] < 10'd637) && (offset_addr_y[i] <= 476) && ite_flag[i]) begin
+//				  
+//						offset_addr_x[i] <= offset_addr_x[i] + SOLVER_ROW;
+//						vga_x_cood[i] <= offset_addr_x[i] + i%SOLVER_ROW;
+//						
+//						offset_real[i] <= offset_real[i] + ROW_X[i];
+//						real_part[i] <= real_part[i] + ROW_X[i];
+//						//real_part[i] <= offset_real[i] + ROW_X + (i%SOLVER_ROW)*x_step;
+//						//real_part[i] <= real_part[i] + SOLVER_ROW * x_step;
+//						
+//						offset_imag[i] <= offset_imag[i];
+//						//imag_part[i] <= offset_imag[i] - (i/SOLVER_ROW)*y_step;
+//						
+//						write_addr[i] <= write_addr[i] + 1 ; 
+//						//write_color[i] <= pixel_color[i];
+//						if(((offset_addr_x[i] == 10'd280) || (offset_addr_x[i] == 10'd294) || (offset_addr_x[i] == 10'd420) ) && SW[9]) begin
+//							write_color[i] <= 8'b_011_001_00;
+//						end
+//						else if (((i%7==0)||(i/7==0))&&SW[2]) begin
+//							write_color[i] <= 8'b_111_111_11;
+//						end
+//						else if (SW[3]) begin
+//							if(offset_addr_x[i] % 10'd5 == 10'd0) begin
+//								write_color[i] <= 8'b_11111111;
+//							end
+//							else if(offset_addr_x[i] % 10'd5 == 10'd1) begin
+//								write_color[i] <= 8'b_11100000;
+//							end
+//							else if(offset_addr_x[i] % 10'd5 == 10'd2) begin
+//								write_color[i] <= 8'b_00011100;
+//							end
+//							else if(offset_addr_x[i] % 10'd5 == 10'd3) begin
+//								write_color[i] <= 8'b_00000011;
+//							end
+//							else if(offset_addr_x[i] % 10'd5 == 10'd4) begin
+//								write_color[i] <= 8'b_11111100;
+//							end
+//						end
+//						else begin
+//							write_color[i] <= pixel_color[i];
+//						end
+//						we[i]<=1'b1;
+//						reset_solver[i] <= 1;
+//				  end 
+//				  else if ((offset_addr_x[i] == 10'd637) && (offset_addr_y[i] <= 476) && ite_flag[i]) begin
+//				  
+//						offset_addr_x[i] <= 10'b0;
+//						vga_x_cood[i] <= offset_addr_x[i] + i%SOLVER_ROW;
+//						
+//						offset_addr_y[i] <= offset_addr_y[i] + SOLVER_COL;
+//						vga_y_cood[i] <= offset_addr_y[i] + i/SOLVER_ROW;
+//						
+//						//real_part[i] <= REAL_MIN + (offset_addr_x[i] + SOLVER_ROW + i%SOLVER_ROW) * x_step;
+//						offset_real[i] <= REAL_MIN;
+//						real_part[i] <= rst_value_real[i];
+//						
+//						offset_imag[i] <= offset_imag[i] - COL_Y[i];
+//						imag_part[i] <= imag_part[i] - COL_Y[i];
+//						//imag_part[i] <= offset_imag[i] - COL_Y - (i/SOLVER_ROW)*y_step;//27'd139808
+//						//imag_part[i] <= IMAG_MAX - (offset_addr_y[i] + SOLVER_COL + i/SOLVER_ROW) * y_step;
+//						
+//						write_addr[i] <= write_addr[i] + 1 ; 
+//						write_color[i] <= pixel_color[i];
+//						we[i]<=1'b1;
+//						reset_solver[i] <=1;
+//				  end
+//				  else begin
+//						reset_solver[i] <=0;
+//						we[i]<=1'b0;
+//				  end
+
 			 end 
 			 else if (current_state[i] == 2'd2) begin // done
 				  time_counter[i]<=time_counter[i];
@@ -715,6 +797,79 @@ generate
 		end
 	end
 endgenerate
+
+
+
+//// input
+always @(posedge CLOCK_50) begin
+		 if (~KEY[0]) begin
+			x_step <= 27'd39321;
+			y_step <= 27'd34952;
+			x_step_81 <= {27'd0,27'd39321,27'd0};
+			y_step_81 <= {27'd0,27'd34952,27'd0};
+         KEY_CURRENT[0] <= KEY[0];		 
+		 end
+	 
+		 else if(~KEY[2]&& KEY_CURRENT[2]) begin      // Zoom in
+			x_step_81 <= x_step_81>>>1;
+			y_step_81 <= y_step_81>>>1;
+		   x_step <= x_step_81[53:27]>>>1;
+		   y_step <= y_step_81[53:27]>>>1;
+         KEY_CURRENT[2] <= KEY[2];
+		 end
+		 
+	  
+		 else if(~KEY[3]&& KEY_CURRENT[3]) begin		 //Zoom out	
+
+			x_step_81 <= x_step_81<<1;
+			y_step_81 <= y_step_81<<1;
+		   x_step <= x_step_81[53:27]<<1;
+		   y_step <= y_step_81[53:27]<<1;
+         KEY_CURRENT[3] <= KEY[3];
+		 end
+		 
+		 else begin
+			x_step <= x_step;
+			y_step <= y_step;
+			KEY_CURRENT <= KEY;
+		 end
+		 
+end
+   
+//// HPS read state machine
+//
+//reg [1:0] read_current_state;
+//reg [1:0] read_next_state;
+//
+//// next state
+//always @(posedge CLOCK_50) begin
+//	if(~KEY[0]) begin
+//		read_current_state <= 2'd0;
+//	end
+//	else begin
+//		read_current_state <= read_next_state;
+//	end
+//end
+//
+//
+//// state transition logic
+//
+//always @(*) begin
+//	case(read_current_state)
+//	2'd0: read_next_state = 2'd1;
+//	2'd1: read_next_state = 2'd2;
+//	2'd2: read_next_state = 2'd3;
+//end
+//
+//// state machine output
+//
+//always @(posedge CLOCK_50) begin
+//	if(read_current_state == 2'd0) begin
+//		if(sram_address)
+//		sram_address <= sram_address ;
+//		sram_write <= 1'b0 ;
+//	end
+//end
 
 
 // calculate the max_counter for rendering time
@@ -738,17 +893,20 @@ always @(posedge CLOCK_100) begin
 			end
 			else begin
 				max_done <= 1;
-				max_counter <= max_counter;
+				max_counter <= 0;
+				max_counter_hex <= max_counter;
 				sram_address <= 8'd1 ;
 				sram_write<= 1'b1 ;
-				sram_writedata <= max_counter ;
+				sram_writedata <= SW[8] ? (SW[7] ? x_step : y_step) : max_counter ;
+				index <= 0;
 			end
 		end
 		else begin
-			max_counter <= max_counter;
+			max_counter <= 0;
 			sram_address <= 8'd1 ;
 			sram_write<= 1'b0 ;
 			sram_writedata <= max_counter ;
+			index <= 0;
 		end
 	end
 end
@@ -963,8 +1121,7 @@ module M10K(
     output reg [7:0] q,
     input [7:0] d,
     input [31:0] write_address, read_address,
-    input we, clk,
-	 input sw
+    input we, clk
 );
 	 // force M10K ram style
 	 // 256 words of 8 bits
@@ -975,14 +1132,7 @@ module M10K(
         if (we) begin
             mem[write_address] <= d;
 		  end
-		  if(sw) begin
-				q <= mem[read_addr]; // q doesn't get d in this clock cycle
-				read_addr<=read_address;
-			end
-			else begin
-				q <= mem[read_address];
-			end
-		  
+		  q <= mem[read_address];
     end
 endmodule
 
@@ -1045,8 +1195,7 @@ module mandelbrot_iterate(
     output reg ite_flag,
 	output reg [7:0] color_reg,
     input reset,
-	 input [31:0] i,
-	 input choice
+	 input [31:0] i
 );
 
 reg signed [26:0] zi, zr;
