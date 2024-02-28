@@ -440,10 +440,10 @@ reg we [NUM_MODULES-1:0];
 wire [31:0] global_addr;
 wire [7:0] data_out;
 
-parameter REAL_MIN = 27'd117440512;
-parameter REAL_MAX = 27'd125829120;
-parameter IMAG_MIN = 27'd125829120;
-parameter IMAG_MAX = 27'd8388608;
+//parameter REAL_MIN = 27'd117440512;
+//parameter REAL_MAX = 27'd125829120;
+//parameter IMAG_MIN = 27'd125829120;
+//parameter IMAG_MAX = 27'd8388608;
 parameter SCREEN_WIDTH = 640;
 parameter SCREEN_HEIGHT = 480;
 parameter NUM_MODULES = 28;
@@ -484,15 +484,35 @@ reg signed [26:0] y_step = 27'd34952;
 reg signed [80:0] x_step_81 = {27'd0,27'd39321,27'd0};
 reg signed [80:0] y_step_81 = {27'd0,27'd34952,27'd0};
 
+reg signed [26:0] REAL_MIN = 27'd117440512;
+reg signed [26:0] REAL_MAX = 27'd125829120;
+reg signed [26:0] IMAG_MIN = 27'd125829120;
+reg signed [26:0] IMAG_MAX = 27'd8388608;
+
+reg signed [26:0] REAL_MIN_temp = 27'd117440512;
+reg signed [26:0] REAL_MAX_temp = 27'd125829120;
+reg signed [26:0] IMAG_MIN_temp = 27'd125829120;
+reg signed [26:0] IMAG_MAX_temp = 27'd8388608;
+
 reg [3:0] KEY_CURRENT;
 
+wire signed [26:0] zoom_level_Positive;
+wire signed [26:0] zoom_level_negetive;
+wire signed [3:0] zoom_level;
 
-HexDigit Digit0(HEX0, KEY);
-HexDigit Digit1(HEX1, hex3_hex0[7:4]);
-HexDigit Digit2(HEX2, (max_counter_hex/100000)%10);
-HexDigit Digit3(HEX3, max_counter_hex/1000000);
+//assign zoom_level_Positive = 27'd39321/x_step;
+//assign zoom_level_negetive = x_step/27'd39321;
+
+HexDigit Digit0(HEX0, (max_counter_hex/100000)%10 );
+HexDigit Digit1
+(HEX1, max_counter_hex/1000000 );
+//HexDigit Digit2(HEX2, 4'd0);
+//HexDigit Digit3(HEX3, 4'd0);
+assign HEX2 = 7'b1111111;
+assign HEX3 = 7'b1111111;
 HexDigit Digit4(HEX4, NUM_MODULES%10 );
 HexDigit Digit5(HEX5, NUM_MODULES/10 );
+
 
 
 // use next_x and next_y to index into M10K memory
@@ -635,14 +655,16 @@ generate
 //				  default:begin real_part[i] <= REAL_MIN; // 39321
 //							 imag_part[i] <= IMAG_MAX; end
 //				  endcase 
-				  rst_value_real[i] <= REAL_MIN + (i%SOLVER_ROW)*x_step;
-				  rst_value_imag[i] <= IMAG_MAX + (i/SOLVER_ROW)*y_step;
-				  real_part[i] <= REAL_MIN+(i[26:0]%SOLVER_ROW)*x_step;
-				  imag_part[i] <= IMAG_MAX-(i[26:0]/SOLVER_ROW)*y_step;
+				  REAL_MIN <= REAL_MIN_temp;
+				  IMAG_MAX <= IMAG_MAX_temp;
+				  rst_value_real[i] <= REAL_MIN_temp + (i%SOLVER_ROW)*x_step;
+				  rst_value_imag[i] <= IMAG_MAX_temp + (i/SOLVER_ROW)*y_step;
+				  real_part[i] <= REAL_MIN_temp+(i[26:0]%SOLVER_ROW)*x_step;
+				  imag_part[i] <= IMAG_MAX_temp-(i[26:0]/SOLVER_ROW)*y_step;
 				  ROW_X[i] <= x_step * SOLVER_ROW;
 				  COL_Y[i] <= y_step * SOLVER_COL;
-				  offset_real[i] <= REAL_MIN;
-				  offset_imag[i] <= IMAG_MAX;
+				  offset_real[i] <= REAL_MIN_temp;
+				  offset_imag[i] <= IMAG_MAX_temp;
 
 				  time_counter[i] <= 32'b0;
 				  we[i]<=1'b0;
@@ -715,78 +737,6 @@ generate
 				  		reset_solver[i] <=0;
 						we[i]<=1'b0;
 				  end
-				  
-//				  if ((offset_addr_x[i] < 10'd637) && (offset_addr_y[i] <= 476) && ite_flag[i]) begin
-//				  
-//						offset_addr_x[i] <= offset_addr_x[i] + SOLVER_ROW;
-//						vga_x_cood[i] <= offset_addr_x[i] + i%SOLVER_ROW;
-//						
-//						offset_real[i] <= offset_real[i] + ROW_X[i];
-//						real_part[i] <= real_part[i] + ROW_X[i];
-//						//real_part[i] <= offset_real[i] + ROW_X + (i%SOLVER_ROW)*x_step;
-//						//real_part[i] <= real_part[i] + SOLVER_ROW * x_step;
-//						
-//						offset_imag[i] <= offset_imag[i];
-//						//imag_part[i] <= offset_imag[i] - (i/SOLVER_ROW)*y_step;
-//						
-//						write_addr[i] <= write_addr[i] + 1 ; 
-//						//write_color[i] <= pixel_color[i];
-//						if(((offset_addr_x[i] == 10'd280) || (offset_addr_x[i] == 10'd294) || (offset_addr_x[i] == 10'd420) ) && SW[9]) begin
-//							write_color[i] <= 8'b_011_001_00;
-//						end
-//						else if (((i%7==0)||(i/7==0))&&SW[2]) begin
-//							write_color[i] <= 8'b_111_111_11;
-//						end
-//						else if (SW[3]) begin
-//							if(offset_addr_x[i] % 10'd5 == 10'd0) begin
-//								write_color[i] <= 8'b_11111111;
-//							end
-//							else if(offset_addr_x[i] % 10'd5 == 10'd1) begin
-//								write_color[i] <= 8'b_11100000;
-//							end
-//							else if(offset_addr_x[i] % 10'd5 == 10'd2) begin
-//								write_color[i] <= 8'b_00011100;
-//							end
-//							else if(offset_addr_x[i] % 10'd5 == 10'd3) begin
-//								write_color[i] <= 8'b_00000011;
-//							end
-//							else if(offset_addr_x[i] % 10'd5 == 10'd4) begin
-//								write_color[i] <= 8'b_11111100;
-//							end
-//						end
-//						else begin
-//							write_color[i] <= pixel_color[i];
-//						end
-//						we[i]<=1'b1;
-//						reset_solver[i] <= 1;
-//				  end 
-//				  else if ((offset_addr_x[i] == 10'd637) && (offset_addr_y[i] <= 476) && ite_flag[i]) begin
-//				  
-//						offset_addr_x[i] <= 10'b0;
-//						vga_x_cood[i] <= offset_addr_x[i] + i%SOLVER_ROW;
-//						
-//						offset_addr_y[i] <= offset_addr_y[i] + SOLVER_COL;
-//						vga_y_cood[i] <= offset_addr_y[i] + i/SOLVER_ROW;
-//						
-//						//real_part[i] <= REAL_MIN + (offset_addr_x[i] + SOLVER_ROW + i%SOLVER_ROW) * x_step;
-//						offset_real[i] <= REAL_MIN;
-//						real_part[i] <= rst_value_real[i];
-//						
-//						offset_imag[i] <= offset_imag[i] - COL_Y[i];
-//						imag_part[i] <= imag_part[i] - COL_Y[i];
-//						//imag_part[i] <= offset_imag[i] - COL_Y - (i/SOLVER_ROW)*y_step;//27'd139808
-//						//imag_part[i] <= IMAG_MAX - (offset_addr_y[i] + SOLVER_COL + i/SOLVER_ROW) * y_step;
-//						
-//						write_addr[i] <= write_addr[i] + 1 ; 
-//						write_color[i] <= pixel_color[i];
-//						we[i]<=1'b1;
-//						reset_solver[i] <=1;
-//				  end
-//				  else begin
-//						reset_solver[i] <=0;
-//						we[i]<=1'b0;
-//				  end
-
 			 end 
 			 else if (current_state[i] == 2'd2) begin // done
 				  time_counter[i]<=time_counter[i];
@@ -801,75 +751,204 @@ endgenerate
 
 
 //// input
-always @(posedge CLOCK_50) begin
-		 if (~KEY[0]) begin
-			x_step <= 27'd39321;
-			y_step <= 27'd34952;
-			x_step_81 <= {27'd0,27'd39321,27'd0};
-			y_step_81 <= {27'd0,27'd34952,27'd0};
-         KEY_CURRENT[0] <= KEY[0];		 
-		 end
-	 
-		 else if(~KEY[2]&& KEY_CURRENT[2]) begin      // Zoom in
-			x_step_81 <= x_step_81>>>1;
-			y_step_81 <= y_step_81>>>1;
-		   x_step <= x_step_81[53:27]>>>1;
-		   y_step <= y_step_81[53:27]>>>1;
-         KEY_CURRENT[2] <= KEY[2];
-		 end
-		 
-	  
-		 else if(~KEY[3]&& KEY_CURRENT[3]) begin		 //Zoom out	
+//always @(posedge CLOCK_50) begin
+//		 if (~KEY[0]) begin
+//			x_step <= 27'd39321;
+//			y_step <= 27'd34952;
+//			x_step_81 <= {27'd0,27'd39321,27'd0};
+//			y_step_81 <= {27'd0,27'd34952,27'd0};
+//         KEY_CURRENT[0] <= KEY[0];		 
+//		 end
+//	 
+//		 else if(~KEY[2]&& KEY_CURRENT[2]) begin      // Zoom in
+//			x_step_81 <= x_step_81>>>1;
+//			y_step_81 <= y_step_81>>>1;
+//		   x_step <= x_step_81[53:27]>>>1;
+//		   y_step <= y_step_81[53:27]>>>1;
+//         KEY_CURRENT[2] <= KEY[2];
+//		 end
+//		 
+//	  
+//		 else if(~KEY[3]&& KEY_CURRENT[3]) begin		 //Zoom out	
+//
+//			x_step_81 <= x_step_81<<1;
+//			y_step_81 <= y_step_81<<1;
+//		   x_step <= x_step_81[53:27]<<1;
+//		   y_step <= y_step_81[53:27]<<1;
+//         KEY_CURRENT[3] <= KEY[3];
+//		 end
+//		 
+//		 else begin
+//			x_step <= x_step;
+//			y_step <= y_step;
+//			KEY_CURRENT <= KEY;
+//		 end
+//		 
+//end
+//   
+// HPS read state machine
 
-			x_step_81 <= x_step_81<<1;
-			y_step_81 <= y_step_81<<1;
-		   x_step <= x_step_81[53:27]<<1;
-		   y_step <= y_step_81[53:27]<<1;
-         KEY_CURRENT[3] <= KEY[3];
-		 end
-		 
-		 else begin
-			x_step <= x_step;
-			y_step <= y_step;
-			KEY_CURRENT <= KEY;
-		 end
-		 
+reg [3:0] current_state2;
+reg [3:0] next_state2;
+
+// next state
+always @(posedge CLOCK_50) begin
+	if(~KEY[0]) begin
+		current_state2 <= 2'd0;
+	end
+	else begin
+		current_state2 <= next_state2;
+	end
 end
-   
-//// HPS read state machine
-//
-//reg [1:0] read_current_state;
-//reg [1:0] read_next_state;
-//
+
+
+// state transition logic
+
+always @(*) begin
+	case(current_state2)
+	4'd0: next_state2 = 4'd1;
+	4'd1: next_state2 = 4'd2;
+	4'd2: next_state2 = 4'd3;
+	4'd3: next_state2 = 4'd4;
+	4'd4: next_state2 = 4'd5;
+	4'd5: next_state2 = 4'd6;
+	4'd6: next_state2 = 4'd7;
+	4'd7: next_state2 = 4'd8;
+	4'd8: next_state2 = 4'd9;
+	4'd9: next_state2 = 4'd10;
+	4'd10: next_state2 = 4'd11;
+	4'd11: next_state2 = 4'd12;
+	4'd12: next_state2 = 4'd13;
+	4'd13: next_state2 = 4'd0;
+	default: next_state2 = 4'd0;
+	endcase
+end
+
+// state machine output
+
+always @(posedge CLOCK_50) begin
+	// reading REAL_MIN
+	if(current_state2 == 4'd0) begin
+		sram_address <= 8'd3 ;
+		sram_write <= 1'b0 ;
+	end
+	else if (current_state2 == 4'd1) begin
+	end
+	else if (current_state2 == 4'd2) begin
+		REAL_MIN_temp <= sram_readdata;
+      sram_write <= 1'b0;
+	end 
+	
+	// reading IMAG_MAX
+	else if(current_state2 == 4'd3) begin
+		sram_address <= 8'd4 ;
+		sram_write <= 1'b0 ;
+	end
+	else if (current_state2 == 4'd4) begin
+	end
+	else if (current_state2 == 4'd5) begin
+		IMAG_MAX_temp <= sram_readdata;
+      sram_write <= 1'b0;
+	end 
+	
+	// reading x_step
+	else if(current_state2 == 4'd6) begin
+		sram_address <= 8'd5 ;
+		sram_write <= 1'b0 ;
+	end
+	else if (current_state2 == 4'd7) begin
+	end
+	else if (current_state2 == 4'd8) begin
+		x_step <= sram_readdata;
+      sram_write <= 1'b0;
+	end 
+	
+	// reading y_step
+	else if(current_state2 == 4'd9) begin
+		sram_address <= 8'd6 ;
+		sram_write <= 1'b0 ;
+	end
+	else if (current_state2 == 4'd10) begin
+	end
+	else if (current_state2 == 4'd11) begin
+		y_step <= sram_readdata;
+      sram_write <= 1'b0;
+	end 
+	
+	//writing max_counter_hex
+	else if (current_state2 == 4'd12) begin
+		sram_address <= 8'd1 ;
+		sram_write<= 1'b1 ;
+		sram_writedata <= SW[8] ? (SW[7] ? x_step : y_step) : max_counter_hex ;
+	end
+	else if (current_state2 == 4'd13) begin
+	
+	end
+end
+
+
+
+//// state machine
 //// next state
-//always @(posedge CLOCK_50) begin
-//	if(~KEY[0]) begin
-//		read_current_state <= 2'd0;
-//	end
-//	else begin
-//		read_current_state <= read_next_state;
-//	end
+//always @(posedge CLOCK_100) begin
+//if (~KEY[0]) begin
+// current_statex <= 2'd10;
+//end else begin
+// current_statex <= next_statex;
+//end
 //end
 //
-//
-//// state transition logic
-//
+//// state changing logic
 //always @(*) begin
-//	case(read_current_state)
-//	2'd0: read_next_state = 2'd1;
-//	2'd1: read_next_state = 2'd2;
-//	2'd2: read_next_state = 2'd3;
+//case (current_statex)
+// 2'd10: next_statex = 2'd11;
+// 2'd11: next_statex = 2'd12;
+// 2'd12: next_statex = 2'd13;
+// 2'd13: next_statex = 2'd14;
+// 2'd14: next_statex = 2'd15;
+// 2'd15: next_statex = 2'd10;
+// default: next_statex = 2'd10;
+//endcase
 //end
 //
-//// state machine output
 //
-//always @(posedge CLOCK_50) begin
-//	if(read_current_state == 2'd0) begin
-//		if(sram_address)
-//		sram_address <= sram_address ;
-//		sram_write <= 1'b0 ;
-//	end
+//always @(posedge CLOCK_100) begin
+// 
+//if (current_statex == 4'd10) begin
+//sram_address <= 8'd3;
+//sram_write <= 1'b0;
+//
 //end
+//
+// else if (current_statex == 4'd11) begin
+//   
+// 
+//end
+// 
+//else if (current_statex == 4'd12) begin
+//REAL_MIN <= sram_readdata;
+//   sram_write <= 1'b0;
+//
+//end
+//
+//else if (current_statex == 4'd13) begin
+//sram_address <= 8'd4;
+//sram_write <= 1'b0;
+//
+//
+//end
+// 
+//else if (current_statex == 4'd14) begin
+//   
+//
+// 
+//end
+// 
+// else if (current_statex == 4'd15) begin
+//IMAG_MAX <= sram_readdata;
+//sram_write <= 1'b0;
+//end
+// end
 
 
 // calculate the max_counter for rendering time
@@ -895,17 +974,17 @@ always @(posedge CLOCK_100) begin
 				max_done <= 1;
 				max_counter <= 0;
 				max_counter_hex <= max_counter;
-				sram_address <= 8'd1 ;
-				sram_write<= 1'b1 ;
-				sram_writedata <= SW[8] ? (SW[7] ? x_step : y_step) : max_counter ;
+//				sram_address <= 8'd1 ;
+//				sram_write<= 1'b1 ;
+//				sram_writedata <= SW[8] ? (SW[7] ? x_step : y_step) : max_counter ;
 				index <= 0;
 			end
 		end
 		else begin
 			max_counter <= 0;
-			sram_address <= 8'd1 ;
-			sram_write<= 1'b0 ;
-			sram_writedata <= max_counter ;
+//			sram_address <= 8'd1 ;
+//			sram_write<= 1'b0 ;
+//			sram_writedata <= max_counter ;
 			index <= 0;
 		end
 	end
