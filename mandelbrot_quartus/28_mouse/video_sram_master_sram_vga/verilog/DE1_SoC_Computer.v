@@ -417,6 +417,7 @@ reg [9:0] vga_x_cood [NUM_MODULES-1:0] ;
 reg [9:0] vga_y_cood [NUM_MODULES-1:0];
 wire [7:0] pixel_color [NUM_MODULES-1:0];
 wire ite_flag [NUM_MODULES-1:0] ;
+reg ite_flag_prev [NUM_MODULES-1:0] ;
 reg signed [26:0] real_part [NUM_MODULES-1:0]; 
 reg signed [26:0] imag_part [NUM_MODULES-1:0];
 reg reset_solver[NUM_MODULES-1:0];
@@ -429,7 +430,8 @@ reg [31:0] time_counter [NUM_MODULES-1:0] ;
 reg [31:0] max_counter;
 reg [31:0] max_counter_hex;
 wire CLOCK_25;
-wire CLOCK_100;
+wire CLOCK_150;
+wire CLOCK_250;
 wire [9:0] next_x;
 wire [9:0] next_y;
 reg [31:0] write_addr [NUM_MODULES-1:0]; 
@@ -453,6 +455,19 @@ parameter BLOCK_ROW = 92;
 parameter BLOCK_COL = 120;
 parameter SOLVER_ROW = 27'd7;
 parameter SOLVER_COL = 27'd4;
+
+parameter LEFT_X_MIN = 27'd124403057;
+parameter LEFT_X_MAX = 27'd127255184;
+parameter LEFT_Y_MIN = 27'd132791665;
+parameter LEFT_Y_MAX = 27'd1426063;
+
+parameter RIGHT_X_MIN = 27'd130023424;
+parameter RIGHT_X_MAX = 27'd2097152;
+parameter RIGHT_Y_MIN = 27'd130023424;
+parameter RIGHT_Y_MAX = 27'd4194304;
+
+
+
 //parameter x_step = 27'd39321;
 //parameter y_step = 27'd34952;
 //parameter ROW_X = 27'd275247;
@@ -500,19 +515,19 @@ wire signed [26:0] zoom_level_Positive;
 wire signed [26:0] zoom_level_negetive;
 wire signed [3:0] zoom_level;
 
+wire skip_flag [NUM_MODULES-1:0];
+
 //assign zoom_level_Positive = 27'd39321/x_step;
 //assign zoom_level_negetive = x_step/27'd39321;
 
-HexDigit Digit0(HEX0, (max_counter_hex/100000)%10 );
-HexDigit Digit1
-(HEX1, max_counter_hex/1000000 );
+HexDigit Digit0(HEX0, (max_counter_hex/150000)%10 );
+HexDigit Digit1(HEX1, max_counter_hex/1500000 );
 //HexDigit Digit2(HEX2, 4'd0);
-//HexDigit Digit3(HEX3, 4'd0);
+HexDigit Digit3(HEX3, {skip_flag[3], skip_flag[2], skip_flag[1], skip_flag[0]});
 assign HEX2 = 7'b1111111;
-assign HEX3 = 7'b1111111;
+//assign HEX3 = 7'b1111111;
 HexDigit Digit4(HEX4, NUM_MODULES%10 );
 HexDigit Digit5(HEX5, NUM_MODULES/10 );
-
 
 
 // use next_x and next_y to index into M10K memory
@@ -553,8 +568,9 @@ generate
 			 .max_iterations(10'd1000), 
 			 .ite_flag(ite_flag[i]), 
 			 .color_reg(pixel_color[i]),
-			 .clk(CLOCK_100), 
+			 .clk(CLOCK_150), 
 			 .reset(reset_solver[i] || (~KEY[0])),
+			 .skip_flag(skip_flag[i]),
 			 .i(i)
 		);
 		M10K M1( 
@@ -563,13 +579,13 @@ generate
 			 .write_address(write_addr[i]),
 			 .read_address(read_addr[i]),
 			 .we(we[i]), 
-			 .clk(CLOCK_100)
+			 .clk(CLOCK_150)
 		);
 		
 
 		// state machine
 		// next state
-		always @(posedge CLOCK_100) begin
+		always @(posedge CLOCK_150) begin
 			 if (~KEY[0]) begin
 				  current_state[i] <= 2'd0;
 			 end else begin
@@ -580,15 +596,15 @@ generate
 		// state changing logic 
 		always @(*) begin
 			 case (current_state[i])
-				  2'd0: next_state[i] = 2'd1;
-				  2'd1: next_state[i] = (offset_addr_y[i] > 10'd476) ? 2'd2 : 2'd1;
-				  2'd2: next_state[i] = max_done? 2'd0: 2'd2;
+				  2'd0: next_state[i] = 2'd2;
+				  2'd2: next_state[i] = (offset_addr_y[i] > 10'd476) ? 2'd3 : 2'd2;
+				  2'd3: next_state[i] = max_done? (SW[0]?2'd3:2'd0): 2'd3;
 				  default: next_state[i] = 2'd0;
 			 endcase
 		end
 
 		// output logic
-		always @(posedge CLOCK_100) begin
+		always @(posedge CLOCK_150) begin
 			 if (current_state[i] == 2'd0) begin  // reset
 				  vga_x_cood[i] <= 10'b0 ;
 				  vga_y_cood[i] <= 10'b0 ;
@@ -657,8 +673,8 @@ generate
 //				  endcase 
 				  REAL_MIN <= REAL_MIN_temp;
 				  IMAG_MAX <= IMAG_MAX_temp;
-				  rst_value_real[i] <= REAL_MIN_temp + (i%SOLVER_ROW)*x_step;
-				  rst_value_imag[i] <= IMAG_MAX_temp + (i/SOLVER_ROW)*y_step;
+				  rst_value_real[i] <= REAL_MIN_temp + (i[26:0]%SOLVER_ROW)*x_step;
+				  rst_value_imag[i] <= IMAG_MAX_temp + (i[26:0]/SOLVER_ROW)*y_step;
 				  real_part[i] <= REAL_MIN_temp+(i[26:0]%SOLVER_ROW)*x_step;
 				  imag_part[i] <= IMAG_MAX_temp-(i[26:0]/SOLVER_ROW)*y_step;
 				  ROW_X[i] <= x_step * SOLVER_ROW;
@@ -669,16 +685,48 @@ generate
 				  time_counter[i] <= 32'b0;
 				  we[i]<=1'b0;
 				  write_addr[i] <= 32'hFFFFFFFF; // FFFFFFFF
+				  reset_solver[i] <= 0;
 //				  write_color[i] <= pixel_color[i];
 				  //index <= 0;
 			 end
-			 else if (current_state[i] == 2'd1) begin  // waiting for calculation result and write memory
+			 else if (current_state[i] == 2'd2) begin  // waiting for calculation result and write memory
 //				  sram_address[i] <= 8'd30 ;
 //				  sram_write[i] <= 1'b0 ;
 //				  sram_writedata[i] <= 32'd0 ;
 				  time_counter[i] <= time_counter[i]+32'b1;
-				  if(ite_flag[i])begin
-						if((offset_addr_x[i] < 10'd637) && (offset_addr_y[i] <= 476)) begin
+				  ite_flag_prev[i] <= ite_flag[i];
+//				  if ((real_part[i]<=LEFT_X_MAX && real_part[i]>=LEFT_X_MIN && imag_part[i]<=LEFT_Y_MAX && imag_part[i]>=LEFT_Y_MIN ) || (real_part[i]<=RIGHT_X_MAX && real_part[i]>=RIGHT_X_MIN && imag_part[i]<=RIGHT_Y_MAX && imag_part[i]>=RIGHT_Y_MIN )) begin
+//						if(offset_addr_x[i] < 10'd637) begin
+//							offset_addr_x[i] <= offset_addr_x[i] + SOLVER_ROW;
+//							vga_x_cood[i] <= offset_addr_x[i] + i%SOLVER_ROW;
+//							
+//							offset_real[i] <= offset_real[i] + ROW_X[i];
+//							real_part[i] <= real_part[i] + ROW_X[i];
+//							
+//							offset_imag[i] <= offset_imag[i];
+//							
+//						end
+//						else if (offset_addr_x[i] == 10'd637) begin
+//							offset_addr_x[i] <= 10'b0;
+//							vga_x_cood[i] <= offset_addr_x[i] + i%SOLVER_ROW;
+//							
+//							offset_addr_y[i] <= offset_addr_y[i] + SOLVER_COL;
+//							vga_y_cood[i] <= offset_addr_y[i] + i/SOLVER_ROW;
+//							
+//							offset_real[i] <= REAL_MIN;
+//							real_part[i] <= rst_value_real[i];
+//							
+//							offset_imag[i] <= offset_imag[i] - COL_Y[i];
+//							imag_part[i] <= imag_part[i] - COL_Y[i];
+//						end
+//						
+//						write_addr[i] <= write_addr[i] + 1 ;
+//						we[i]<=1'b1;
+//						reset_solver[i] <= 1;
+//						write_color[i] <= 8'd0;
+//				  end
+				  if( (ite_flag[i] && ~ite_flag_prev[i]) || skip_flag[i] )begin
+						if(offset_addr_x[i] < 10'd637) begin
 							offset_addr_x[i] <= offset_addr_x[i] + SOLVER_ROW;
 							vga_x_cood[i] <= offset_addr_x[i] + i%SOLVER_ROW;
 							
@@ -688,7 +736,7 @@ generate
 							offset_imag[i] <= offset_imag[i];
 							
 						end
-						else if ((offset_addr_x[i] == 10'd637) && (offset_addr_y[i] <= 476)) begin
+						else if (offset_addr_x[i] == 10'd637) begin
 							offset_addr_x[i] <= 10'b0;
 							vga_x_cood[i] <= offset_addr_x[i] + i%SOLVER_ROW;
 							
@@ -706,86 +754,59 @@ generate
 						we[i]<=1'b1;
 						reset_solver[i] <= 1;
 						
-						if(((offset_addr_x[i] == 10'd280) || (offset_addr_x[i] == 10'd294) || (offset_addr_x[i] == 10'd420) ) && SW[9]) begin
-							write_color[i] <= 8'b_011_001_00;
-						end
-						else if (((i%7==0)||(i/7==0))&&SW[2]) begin
-							write_color[i] <= 8'b_111_111_11;
-						end
-						else if (SW[3]) begin
-							if(offset_addr_x[i] % 10'd5 == 10'd0) begin
-								write_color[i] <= 8'b_11111111;
-							end
-							else if(offset_addr_x[i] % 10'd5 == 10'd1) begin
-								write_color[i] <= 8'b_11100000;
-							end
-							else if(offset_addr_x[i] % 10'd5 == 10'd2) begin
-								write_color[i] <= 8'b_00011100;
-							end
-							else if(offset_addr_x[i] % 10'd5 == 10'd3) begin
-								write_color[i] <= 8'b_00000011;
-							end
-							else if(offset_addr_x[i] % 10'd5 == 10'd4) begin
-								write_color[i] <= 8'b_11111100;
-							end
+						if(skip_flag[i]) begin
+							write_color[i] <= 8'b0;
 						end
 						else begin
 							write_color[i] <= pixel_color[i];
 						end
+						
+						
+//						if(((offset_addr_x[i] == 10'd280) || (offset_addr_x[i] == 10'd294) || (offset_addr_x[i] == 10'd420) ) && SW[9]) begin
+//							write_color[i] <= 8'b_011_001_00;
+//						end
+//						else if (((i%7==0)||(i/7==0))&&SW[2]) begin
+//							write_color[i] <= 8'b_111_111_11;
+//						end
+//						else if (SW[3]) begin
+//							if(offset_addr_x[i] % 10'd5 == 10'd0) begin
+//								write_color[i] <= 8'b_11111111;
+//							end
+//							else if(offset_addr_x[i] % 10'd5 == 10'd1) begin
+//								write_color[i] <= 8'b_11100000;
+//							end
+//							else if(offset_addr_x[i] % 10'd5 == 10'd2) begin
+//								write_color[i] <= 8'b_00011100;
+//							end
+//							else if(offset_addr_x[i] % 10'd5 == 10'd3) begin
+//								write_color[i] <= 8'b_00000011;
+//							end
+//							else if(offset_addr_x[i] % 10'd5 == 10'd4) begin
+//								write_color[i] <= 8'b_11111100;
+//							end
+//						end
+//						else begin
+//							write_color[i] <= pixel_color[i];
+//						end
 				  end
 				  else begin
+						
 				  		reset_solver[i] <=0;
 						we[i]<=1'b0;
 				  end
 			 end 
-			 else if (current_state[i] == 2'd2) begin // done
+			 else if (current_state[i] == 2'd3) begin // done
 				  time_counter[i]<=time_counter[i];
 				  done[i] <= 1;
 				  we[i]<=0;
 				  write_addr[i] <= 32'hFFFFFFFF;
+				  reset_solver[i] <= 1;
 			 end
 		end
 	end
 endgenerate
 
-
-
-//// input
-//always @(posedge CLOCK_50) begin
-//		 if (~KEY[0]) begin
-//			x_step <= 27'd39321;
-//			y_step <= 27'd34952;
-//			x_step_81 <= {27'd0,27'd39321,27'd0};
-//			y_step_81 <= {27'd0,27'd34952,27'd0};
-//         KEY_CURRENT[0] <= KEY[0];		 
-//		 end
-//	 
-//		 else if(~KEY[2]&& KEY_CURRENT[2]) begin      // Zoom in
-//			x_step_81 <= x_step_81>>>1;
-//			y_step_81 <= y_step_81>>>1;
-//		   x_step <= x_step_81[53:27]>>>1;
-//		   y_step <= y_step_81[53:27]>>>1;
-//         KEY_CURRENT[2] <= KEY[2];
-//		 end
-//		 
-//	  
-//		 else if(~KEY[3]&& KEY_CURRENT[3]) begin		 //Zoom out	
-//
-//			x_step_81 <= x_step_81<<1;
-//			y_step_81 <= y_step_81<<1;
-//		   x_step <= x_step_81[53:27]<<1;
-//		   y_step <= y_step_81[53:27]<<1;
-//         KEY_CURRENT[3] <= KEY[3];
-//		 end
-//		 
-//		 else begin
-//			x_step <= x_step;
-//			y_step <= y_step;
-//			KEY_CURRENT <= KEY;
-//		 end
-//		 
-//end
-//   
+  
 // HPS read state machine
 
 reg [3:0] current_state2;
@@ -879,7 +900,7 @@ always @(posedge CLOCK_50) begin
 	else if (current_state2 == 4'd12) begin
 		sram_address <= 8'd1 ;
 		sram_write<= 1'b1 ;
-		sram_writedata <= SW[8] ? (SW[7] ? x_step : y_step) : max_counter_hex ;
+		sram_writedata <= max_counter_hex ;
 	end
 	else if (current_state2 == 4'd13) begin
 	
@@ -888,71 +909,8 @@ end
 
 
 
-//// state machine
-//// next state
-//always @(posedge CLOCK_100) begin
-//if (~KEY[0]) begin
-// current_statex <= 2'd10;
-//end else begin
-// current_statex <= next_statex;
-//end
-//end
-//
-//// state changing logic
-//always @(*) begin
-//case (current_statex)
-// 2'd10: next_statex = 2'd11;
-// 2'd11: next_statex = 2'd12;
-// 2'd12: next_statex = 2'd13;
-// 2'd13: next_statex = 2'd14;
-// 2'd14: next_statex = 2'd15;
-// 2'd15: next_statex = 2'd10;
-// default: next_statex = 2'd10;
-//endcase
-//end
-//
-//
-//always @(posedge CLOCK_100) begin
-// 
-//if (current_statex == 4'd10) begin
-//sram_address <= 8'd3;
-//sram_write <= 1'b0;
-//
-//end
-//
-// else if (current_statex == 4'd11) begin
-//   
-// 
-//end
-// 
-//else if (current_statex == 4'd12) begin
-//REAL_MIN <= sram_readdata;
-//   sram_write <= 1'b0;
-//
-//end
-//
-//else if (current_statex == 4'd13) begin
-//sram_address <= 8'd4;
-//sram_write <= 1'b0;
-//
-//
-//end
-// 
-//else if (current_statex == 4'd14) begin
-//   
-//
-// 
-//end
-// 
-// else if (current_statex == 4'd15) begin
-//IMAG_MAX <= sram_readdata;
-//sram_write <= 1'b0;
-//end
-// end
-
-
 // calculate the max_counter for rendering time
-always @(posedge CLOCK_100) begin
+always @(posedge CLOCK_150) begin
 	if(~KEY[0]) begin
 		index <= 0;
 		max_counter <= 0;
@@ -1000,9 +958,16 @@ video_pll pll1 (
 pll2 pll2 (
 		.refclk(CLOCK_50),   //  refclk.clk
 		.rst(~KEY[0]),      //   reset.reset
-		.outclk_0(CLOCK_100), // outclk0.clk
+		.outclk_0(CLOCK_150), // outclk0.clk
 		.locked()    //  locked.export
 	);
+	
+//ite_pll ite_pll (
+//		.refclk(CLOCK2_50),   //  refclk.clk
+//		.rst(~KEY[0]),      //   reset.reset
+//		.outclk_0(CLOCK_250), // outclk0.clk
+//		.locked()    //  locked.export
+//	);
 
 vga_driver VGA1 (
     .clock(CLOCK_25),     // 25 MHz
@@ -1215,57 +1180,6 @@ module M10K(
     end
 endmodule
 
-////Verilog HDL Simple Dual-Port, Dual-Clock Synchronous RAM
-//module simple_dual_port_ram_dual_clock
-//#(parameter DATA_WIDTH=8, parameter ADDR_WIDTH=6)
-//(
-//	input [(DATA_WIDTH-1):0] data,
-//	input [(ADDR_WIDTH-1):0] read_addr, write_addr,
-//	input we, read_clock, write_clock,
-//	output reg [(DATA_WIDTH-1):0] q
-//);
-//
-//	// Declare the RAM variable
-//	reg [DATA_WIDTH-1:0] ram[2**ADDR_WIDTH-1:0];
-//	
-//	always @ (posedge write_clock)
-//	begin
-//		// Write
-//		if (we)
-//			ram[write_addr] <= data;
-//	end
-//	
-//	always @ (posedge read_clock)
-//	begin
-//		// Read 
-//		q <= ram[read_addr];
-//	end
-//	
-//endmodule
-//============================================================
-// MLAB module for testing
-//============================================================
-// See example 12-16 in 
-// http://people.ece.cornell.edu/land/courses/ece5760/DE1_SOC/HDL_style_qts_qii51007.pdf
-//============================================================
-//module MLAB_20_32(
-//	output reg signed [31:0] q,
-//	input  [31:0] data,
-//	input [7:0] readaddr, writeaddr,
-//	input wren, clock
-//);
-//	// force MLAB ram style
-//	// 20 words of 32 bits
-//	reg signed [31:0] mem [19:0] /* synthesis ramstyle = "no_rw_check, MLAB" */;
-//	
-//	always @ (posedge clock)
-//	begin
-//		if (wren) begin
-//			mem[writeaddr] <= data;
-//		end
-//		q <= mem[readaddr];
-//	end
-//endmodule
 
 module mandelbrot_iterate(
     input signed [26:0] ci, cr,
@@ -1274,32 +1188,57 @@ module mandelbrot_iterate(
     output reg ite_flag,
 	output reg [7:0] color_reg,
     input reset,
+	 output reg skip_flag,
 	 input [31:0] i
 );
+// black region
+parameter LEFT_X_MIN = 27'd124403057;
+parameter LEFT_X_MAX = 27'd127255184;
+parameter LEFT_Y_MIN = 27'd132791665;
+parameter LEFT_Y_MAX = 27'd1426063;
+
+parameter RIGHT_X_MIN = 27'd130023424;
+parameter RIGHT_X_MAX = 27'd2097152;
+parameter RIGHT_Y_MIN = 27'd130023424;
+parameter RIGHT_Y_MAX = 27'd4194304;
 
 reg signed [26:0] zi, zr;
 reg signed [26:0] zi_temp, zr_temp;
 wire signed [26:0] zi_squared, zr_squared, zrmulzi;
 reg [15:0] iterations;
 
+
 signed_mult inst1(zi_squared, zi, zi);
 signed_mult inst2(zr_squared, zr, zr);
 signed_mult inst3(zrmulzi, zr, zi);
 
 always @(posedge clk) begin
-    if (reset || ite_flag == 1'b1) begin
+    if (reset == 1'b1) begin
         iterations <= 0;
         zi <= 0;
         zr <= 0;
-		  ite_flag <= 0;
+		  ite_flag <= 1'b0;
+		  skip_flag <= 1'b0;
     end 
     else begin
-        if (iterations < max_iterations && (zr_squared + zi_squared) <= (4 << 23)) begin
+		  if (iterations < max_iterations && (zr_squared + zi_squared) <= (4 << 23)) begin
             zr <= zr_squared - zi_squared + cr;
             zi <= (zrmulzi << 1) + ci;
             iterations <= iterations + 1;
+				ite_flag <= 1'b0;
         end
-		  ite_flag <= ((zr_squared + zi_squared) > (4 << 23)) | (iterations >= max_iterations);
+		  else begin
+		      ite_flag <= 1'b1;
+		  end
+		  
+		  if ((($signed(cr)<=$signed(LEFT_X_MAX)) && ($signed(cr)>=$signed(LEFT_X_MIN)) && ($signed(ci)<=$signed(LEFT_Y_MAX)) && ($signed(ci)>=$signed(LEFT_Y_MIN)) ) ||
+		  (($signed(cr)<=$signed(RIGHT_X_MAX)) && ($signed(cr)>=$signed(RIGHT_X_MIN)) && ($signed(ci)<=$signed(RIGHT_Y_MAX)) && ($signed(ci)>=$signed(RIGHT_Y_MIN)) )) begin
+				skip_flag <= 1'b1;
+		  end
+		  else begin
+				skip_flag <= 1'b0;
+		  end
+//		  ite_flag <= ((zr_squared + zi_squared) > (4 << 23)) | (iterations >= max_iterations);
     end
 	if (iterations >= max_iterations) begin
 	color_reg <= 8'b_000_000_00 ; // black
@@ -1331,6 +1270,7 @@ always @(posedge clk) begin
 	else begin
 	color_reg <= 8'b_010_100_10 ;
 	end
+	
 end
 	
 endmodule

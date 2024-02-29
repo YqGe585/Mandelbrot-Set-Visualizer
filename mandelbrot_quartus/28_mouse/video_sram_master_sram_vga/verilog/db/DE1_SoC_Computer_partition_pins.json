@@ -48,6 +48,18 @@
 					"strict" : false
 				},
 				{
+					"name" : "HEX1[4]",
+					"strict" : false
+				},
+				{
+					"name" : "HEX1[5]",
+					"strict" : false
+				},
+				{
+					"name" : "HEX1[6]",
+					"strict" : false
+				},
+				{
 					"name" : "VGA_B[6]",
 					"strict" : false
 				},
@@ -92,19 +104,31 @@
 					"strict" : false
 				},
 				{
-					"name" : "HEX1[4]",
+					"name" : "HEX3[0]",
 					"strict" : false
 				},
 				{
-					"name" : "HEX1[5]",
+					"name" : "HEX3[1]",
 					"strict" : false
 				},
 				{
-					"name" : "HEX1[6]",
+					"name" : "HEX3[2]",
 					"strict" : false
 				},
 				{
-					"name" : "CLOCK_50",
+					"name" : "HEX3[3]",
+					"strict" : false
+				},
+				{
+					"name" : "HEX3[4]",
+					"strict" : false
+				},
+				{
+					"name" : "HEX3[5]",
+					"strict" : false
+				},
+				{
+					"name" : "HEX3[6]",
 					"strict" : false
 				},
 				{
@@ -112,23 +136,11 @@
 					"strict" : false
 				},
 				{
-					"name" : "SW[7]",
+					"name" : "CLOCK_50",
 					"strict" : false
 				},
 				{
-					"name" : "SW[8]",
-					"strict" : false
-				},
-				{
-					"name" : "SW[3]",
-					"strict" : false
-				},
-				{
-					"name" : "SW[9]",
-					"strict" : false
-				},
-				{
-					"name" : "SW[2]",
+					"name" : "SW[0]",
 					"strict" : false
 				}
 			]
