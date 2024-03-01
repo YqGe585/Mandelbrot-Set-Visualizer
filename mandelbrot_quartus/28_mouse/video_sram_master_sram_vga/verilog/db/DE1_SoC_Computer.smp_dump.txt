@@ -21,18 +21,29 @@ h_state.H_PULSE_STATE 0 1 0 1
 h_state.H_BACK_STATE 1 0 0 1 
 
 State Machine - |DE1_SoC_Computer|current_state2
-Name current_state2.1101 current_state2.1100 current_state2.1011 current_state2.1010 current_state2.1001 current_state2.1000 current_state2.0111 current_state2.0110 current_state2.0101 current_state2.0100 current_state2.0011 current_state2.0010 current_state2.0001 current_state2.0000 
-current_state2.0000 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-current_state2.0001 0 0 0 0 0 0 0 0 0 0 0 0 1 1 
-current_state2.0010 0 0 0 0 0 0 0 0 0 0 0 1 0 1 
-current_state2.0011 0 0 0 0 0 0 0 0 0 0 1 0 0 1 
-current_state2.0100 0 0 0 0 0 0 0 0 0 1 0 0 0 1 
-current_state2.0101 0 0 0 0 0 0 0 0 1 0 0 0 0 1 
-current_state2.0110 0 0 0 0 0 0 0 1 0 0 0 0 0 1 
-current_state2.0111 0 0 0 0 0 0 1 0 0 0 0 0 0 1 
-current_state2.1000 0 0 0 0 0 1 0 0 0 0 0 0 0 1 
-current_state2.1001 0 0 0 0 1 0 0 0 0 0 0 0 0 1 
-current_state2.1010 0 0 0 1 0 0 0 0 0 0 0 0 0 1 
-current_state2.1011 0 0 1 0 0 0 0 0 0 0 0 0 0 1 
-current_state2.1100 0 1 0 0 0 0 0 0 0 0 0 0 0 1 
-current_state2.1101 1 0 0 0 0 0 0 0 0 0 0 0 0 1 
+Name current_state2.11000 current_state2.10111 current_state2.10110 current_state2.10101 current_state2.10100 current_state2.10011 current_state2.10010 current_state2.10001 current_state2.10000 current_state2.01111 current_state2.01110 current_state2.01101 current_state2.01100 current_state2.01011 current_state2.01010 current_state2.01001 current_state2.01000 current_state2.00111 current_state2.00110 current_state2.00101 current_state2.00100 current_state2.00011 current_state2.00010 current_state2.00001 current_state2.00000 
+current_state2.00000 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+current_state2.00001 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 
+current_state2.00010 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 
+current_state2.00011 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 1 
+current_state2.00100 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 
+current_state2.00101 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 
+current_state2.00110 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 
+current_state2.00111 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 
+current_state2.01000 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 
+current_state2.01001 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 
+current_state2.01010 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 
+current_state2.01011 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 
+current_state2.01100 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 
+current_state2.01101 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 
+current_state2.01110 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+current_state2.01111 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+current_state2.10000 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+current_state2.10001 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+current_state2.10010 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+current_state2.10011 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+current_state2.10100 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+current_state2.10101 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+current_state2.10110 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+current_state2.10111 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+current_state2.11000 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 

@@ -418,6 +418,7 @@ reg [9:0] vga_y_cood [NUM_MODULES-1:0];
 wire [7:0] pixel_color [NUM_MODULES-1:0];
 wire ite_flag [NUM_MODULES-1:0] ;
 reg ite_flag_prev [NUM_MODULES-1:0] ;
+reg skip_flag_prev [NUM_MODULES-1:0] ;
 reg signed [26:0] real_part [NUM_MODULES-1:0]; 
 reg signed [26:0] imag_part [NUM_MODULES-1:0];
 reg reset_solver[NUM_MODULES-1:0];
@@ -517,6 +518,9 @@ wire signed [3:0] zoom_level;
 
 wire skip_flag [NUM_MODULES-1:0];
 
+reg [15:0] max_iterations [NUM_MODULES-1:0];
+reg [15:0] max_iterations_temp = 16'd1000;
+
 //assign zoom_level_Positive = 27'd39321/x_step;
 //assign zoom_level_negetive = x_step/27'd39321;
 
@@ -565,7 +569,7 @@ generate
 		mandelbrot_iterate insts(
 			 .ci(imag_part[i]), 
 			 .cr(real_part[i]), 
-			 .max_iterations(10'd1000), 
+			 .max_iterations(max_iterations[i]), 
 			 .ite_flag(ite_flag[i]), 
 			 .color_reg(pixel_color[i]),
 			 .clk(CLOCK_150), 
@@ -598,7 +602,7 @@ generate
 			 case (current_state[i])
 				  2'd0: next_state[i] = 2'd2;
 				  2'd2: next_state[i] = (offset_addr_y[i] > 10'd476) ? 2'd3 : 2'd2;
-				  2'd3: next_state[i] = max_done? (SW[0]?2'd3:2'd0): 2'd3;
+				  2'd3: next_state[i] = max_done? 2'd0: 2'd3;
 				  default: next_state[i] = 2'd0;
 			 endcase
 		end
@@ -686,6 +690,7 @@ generate
 				  we[i]<=1'b0;
 				  write_addr[i] <= 32'hFFFFFFFF; // FFFFFFFF
 				  reset_solver[i] <= 0;
+				  max_iterations[i] <= max_iterations_temp;
 //				  write_color[i] <= pixel_color[i];
 				  //index <= 0;
 			 end
@@ -695,6 +700,7 @@ generate
 //				  sram_writedata[i] <= 32'd0 ;
 				  time_counter[i] <= time_counter[i]+32'b1;
 				  ite_flag_prev[i] <= ite_flag[i];
+				  skip_flag_prev[i] <= skip_flag[i];
 //				  if ((real_part[i]<=LEFT_X_MAX && real_part[i]>=LEFT_X_MIN && imag_part[i]<=LEFT_Y_MAX && imag_part[i]>=LEFT_Y_MIN ) || (real_part[i]<=RIGHT_X_MAX && real_part[i]>=RIGHT_X_MIN && imag_part[i]<=RIGHT_Y_MAX && imag_part[i]>=RIGHT_Y_MIN )) begin
 //						if(offset_addr_x[i] < 10'd637) begin
 //							offset_addr_x[i] <= offset_addr_x[i] + SOLVER_ROW;
@@ -725,7 +731,7 @@ generate
 //						reset_solver[i] <= 1;
 //						write_color[i] <= 8'd0;
 //				  end
-				  if( (ite_flag[i] && ~ite_flag_prev[i]) || skip_flag[i] )begin
+				  if( (ite_flag[i] && ~ite_flag_prev[i]) || (skip_flag[i] && ~skip_flag_prev[i]) )begin
 						if(offset_addr_x[i] < 10'd637) begin
 							offset_addr_x[i] <= offset_addr_x[i] + SOLVER_ROW;
 							vga_x_cood[i] <= offset_addr_x[i] + i%SOLVER_ROW;
@@ -801,6 +807,7 @@ generate
 				  we[i]<=0;
 				  write_addr[i] <= 32'hFFFFFFFF;
 				  reset_solver[i] <= 1;
+				  max_iterations[i] <= max_iterations_temp;
 			 end
 		end
 	end
@@ -809,13 +816,13 @@ endgenerate
   
 // HPS read state machine
 
-reg [3:0] current_state2;
-reg [3:0] next_state2;
+reg [4:0] current_state2;
+reg [4:0] next_state2;
 
 // next state
 always @(posedge CLOCK_50) begin
 	if(~KEY[0]) begin
-		current_state2 <= 2'd0;
+		current_state2 <= 5'd17;
 	end
 	else begin
 		current_state2 <= next_state2;
@@ -827,21 +834,34 @@ end
 
 always @(*) begin
 	case(current_state2)
-	4'd0: next_state2 = 4'd1;
-	4'd1: next_state2 = 4'd2;
-	4'd2: next_state2 = 4'd3;
-	4'd3: next_state2 = 4'd4;
-	4'd4: next_state2 = 4'd5;
-	4'd5: next_state2 = 4'd6;
-	4'd6: next_state2 = 4'd7;
-	4'd7: next_state2 = 4'd8;
-	4'd8: next_state2 = 4'd9;
-	4'd9: next_state2 = 4'd10;
-	4'd10: next_state2 = 4'd11;
-	4'd11: next_state2 = 4'd12;
-	4'd12: next_state2 = 4'd13;
-	4'd13: next_state2 = 4'd0;
-	default: next_state2 = 4'd0;
+	5'd0: next_state2 = 5'd1;
+	5'd1: next_state2 = 5'd2;
+	5'd2: next_state2 = 5'd3;
+	5'd3: next_state2 = 5'd4;
+	5'd4: next_state2 = 5'd5;
+	5'd5: next_state2 = 5'd6;
+	5'd6: next_state2 = 5'd7;
+	5'd7: next_state2 = 5'd8;
+	5'd8: next_state2 = 5'd9;
+	5'd9: next_state2 = 5'd10;
+	5'd10: next_state2 = 5'd11;
+	5'd11: next_state2 = 5'd12;
+	5'd12: next_state2 = 5'd13;
+	5'd13: next_state2 = 5'd14;
+	5'd14: next_state2 = 5'd15;
+	5'd15: next_state2 = 5'd16;
+	5'd16: next_state2 = 5'd0;
+	
+	//reset
+	5'd17: next_state2 = 5'd18;
+	5'd18: next_state2 = 5'd19;
+	5'd19: next_state2 = 5'd20;
+	5'd20: next_state2 = 5'd21;
+	5'd21: next_state2 = 5'd22;
+	5'd22: next_state2 = 5'd23;
+	5'd23: next_state2 = 5'd24;
+	5'd24: next_state2 = 5'd0;
+	default: next_state2 = 5'd0;
 	endcase
 end
 
@@ -849,62 +869,124 @@ end
 
 always @(posedge CLOCK_50) begin
 	// reading REAL_MIN
-	if(current_state2 == 4'd0) begin
+	if(current_state2 == 5'd0) begin
 		sram_address <= 8'd3 ;
 		sram_write <= 1'b0 ;
 	end
-	else if (current_state2 == 4'd1) begin
+	else if (current_state2 == 5'd1) begin
 	end
-	else if (current_state2 == 4'd2) begin
+	else if (current_state2 == 5'd2) begin
 		REAL_MIN_temp <= sram_readdata;
       sram_write <= 1'b0;
 	end 
 	
 	// reading IMAG_MAX
-	else if(current_state2 == 4'd3) begin
+	else if(current_state2 == 5'd3) begin
 		sram_address <= 8'd4 ;
 		sram_write <= 1'b0 ;
 	end
-	else if (current_state2 == 4'd4) begin
+	else if (current_state2 == 5'd4) begin
 	end
-	else if (current_state2 == 4'd5) begin
+	else if (current_state2 == 5'd5) begin
 		IMAG_MAX_temp <= sram_readdata;
       sram_write <= 1'b0;
 	end 
 	
 	// reading x_step
-	else if(current_state2 == 4'd6) begin
+	else if(current_state2 ==5'd6) begin
 		sram_address <= 8'd5 ;
 		sram_write <= 1'b0 ;
 	end
-	else if (current_state2 == 4'd7) begin
+	else if (current_state2 == 5'd7) begin
 	end
-	else if (current_state2 == 4'd8) begin
+	else if (current_state2 == 5'd8) begin
 		x_step <= sram_readdata;
       sram_write <= 1'b0;
 	end 
 	
 	// reading y_step
-	else if(current_state2 == 4'd9) begin
+	else if(current_state2 == 5'd9) begin
 		sram_address <= 8'd6 ;
 		sram_write <= 1'b0 ;
 	end
-	else if (current_state2 == 4'd10) begin
+	else if (current_state2 == 5'd10) begin
 	end
-	else if (current_state2 == 4'd11) begin
+	else if (current_state2 == 5'd11) begin
 		y_step <= sram_readdata;
       sram_write <= 1'b0;
 	end 
 	
+	// reading max_iterations
+	else if(current_state2 == 5'd12) begin
+		sram_address <= 8'd7 ;
+		sram_write <= 1'b0 ;
+	end
+	else if (current_state2 == 5'd13) begin
+	end
+	else if (current_state2 == 5'd14) begin
+		max_iterations_temp <= sram_readdata[15:0];
+      sram_write <= 1'b0;
+	end 
+	
 	//writing max_counter_hex
-	else if (current_state2 == 4'd12) begin
+	else if (current_state2 == 5'd15) begin
 		sram_address <= 8'd1 ;
 		sram_write<= 1'b1 ;
 		sram_writedata <= max_counter_hex ;
 	end
-	else if (current_state2 == 4'd13) begin
+	else if (current_state2 == 5'd16) begin
 	
 	end
+	
+	//writing real_min
+	else if (current_state2 == 5'd17) begin
+		sram_address <= 8'd3 ;
+		sram_write<= 1'b1 ;
+		sram_writedata <= 27'd117440512 ;
+	end
+	else if (current_state2 == 5'd18) begin
+	
+	end
+	
+	//writing imag_max
+	else if (current_state2 == 5'd19) begin
+		sram_address <= 8'd4 ;
+		sram_write<= 1'b1 ;
+		sram_writedata <= 27'd8388608 ;
+	end
+	else if (current_state2 == 5'd20) begin
+	
+	end
+	
+	//writing x_step
+	else if (current_state2 == 5'd21) begin
+		sram_address <= 8'd5 ;
+		sram_write<= 1'b1 ;
+		sram_writedata <= 27'd39321 ;
+	end
+	else if (current_state2 == 5'd22) begin
+	
+	end
+	
+	//writing y_step
+	else if (current_state2 == 5'd23) begin
+		sram_address <= 8'd6 ;
+		sram_write<= 1'b1 ;
+		sram_writedata <= 27'd34952 ;
+	end
+	else if (current_state2 == 5'd24) begin
+	
+	end
+	
+//	//writing HPS_flag
+//	else if (current_state2 == 5'd25) begin
+//		sram_address <= 8'd8 ;
+//		sram_write<= 1'b1 ;
+//		sram_writedata <= 27'd34952 ;
+//	end
+//	else if (current_state2 == 5'd26) begin
+//	
+//	end
 end
 
 
