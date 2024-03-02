@@ -1,0 +1,76 @@
+
+
+C:/Users/yg585/Desktop/New folder/Mandelbrot-Set-Visualizer/mandelbrot_quartus/moresolvers/video_sram_master_sram_vga/verilog/video_pll.v
+
+Feb 23 09PM:12:04>: Megafunction PLL Intel FPGA IP v18.1 is not listed in any 
+wizard.lst file in the specified library path(s).Wizard launch aborted
+
+C:/Users/yg585/Desktop/New folder/Mandelbrot-Set-Visualizer/mandelbrot_quartus/moresolvers/video_sram_master_sram_vga/verilog/pll2.v
+
+Feb 23 09PM:12:10>: Megafunction PLL Intel FPGA IP v18.1 is not listed in any 
+wizard.lst file in the specified library path(s).Wizard launch aborted
+
+C:/Users/yg585/Desktop/lab2/Mandelbrot-Set-Visualizer/mandelbrot_quartus/28_mouse/video_sram_master_sram_vga/verilog/pll2.v
+
+Feb 28 02PM:38:02>: Megafunction PLL Intel FPGA IP v18.1 is not listed in any 
+wizard.lst file in the specified library path(s).Wizard launch aborted
+
+C:/Users/yg585/Desktop/lab2/Mandelbrot-Set-Visualizer/mandelbrot_quartus/28_mouse/video_sram_master_sram_vga/verilog/pll2.v
+
+Feb 28 02PM:38:09>: Megafunction PLL Intel FPGA IP v18.1 is not listed in any 
+wizard.lst file in the specified library path(s).Wizard launch aborted
+
+C:/Users/yg585/Desktop/lab2/Mandelbrot-Set-Visualizer/mandelbrot_quartus/28_mouse/video_sram_master_sram_vga/verilog/pll2.v
+
+Feb 28 02PM:38:43>: Megafunction PLL Intel FPGA IP v18.1 is not listed in any 
+wizard.lst file in the specified library path(s).Wizard launch aborted
+
+C:/Users/yg585/Desktop/lab2/Mandelbrot-Set-Visualizer/mandelbrot_quartus/28_mouse/video_sram_master_sram_vga/verilog/pll2.v
+
+Feb 28 02PM:39:30>: Megafunction PLL Intel FPGA IP v18.1 is not listed in any 
+wizard.lst file in the specified library path(s).Wizard launch aborted
+
+C:/Users/yg585/Desktop/lab2/Mandelbrot-Set-Visualizer/mandelbrot_quartus/28_mouse/video_sram_master_sram_vga/verilog/pll2.v
+
+Feb 28 02PM:44:26>: Megafunction PLL Intel FPGA IP v18.1 is not listed in any 
+wizard.lst file in the specified library path(s).Wizard launch aborted
+
+C:/Users/yg585/Desktop/lab2/Mandelbrot-Set-Visualizer/mandelbrot_quartus/28_mouse/video_sram_master_sram_vga/verilog/pll2.v
+
+Feb 28 02PM:45:30>: Megafunction PLL Intel FPGA IP v18.1 is not listed in any 
+wizard.lst file in the specified library path(s).Wizard launch aborted
+
+C:/Users/yg585/Desktop/lab2/Mandelbrot-Set-Visualizer/mandelbrot_quartus/28_mouse/video_sram_master_sram_vga/verilog/pll2.v
+
+Feb 28 02PM:45:35>: Megafunction PLL Intel FPGA IP v18.1 is not listed in any 
+wizard.lst file in the specified library path(s).Wizard launch aborted
+
+C:/Users/yg585/Desktop/lab2/Mandelbrot-Set-Visualizer/mandelbrot_quartus/28_mouse/video_sram_master_sram_vga/verilog/pll2.v
+
+Feb 28 02PM:46:22>: Megafunction PLL Intel FPGA IP v18.1 is not listed in any 
+wizard.lst file in the specified library path(s).Wizard launch aborted
+
+C:/Users/yg585/Desktop/lab2/Mandelbrot-Set-Visualizer/mandelbrot_quartus/28_mouse/video_sram_master_sram_vga/verilog/video_pll.v
+
+Feb 28 02PM:46:25>: Megafunction PLL Intel FPGA IP v18.1 is not listed in any 
+wizard.lst file in the specified library path(s).Wizard launch aborted
+
+C:/Users/yg585/Desktop/lab2/Mandelbrot-Set-Visualizer/mandelbrot_quartus/28_mouse/video_sram_master_sram_vga/verilog/pll2.v
+
+Feb 28 02PM:46:54>: Megafunction PLL Intel FPGA IP v18.1 is not listed in any 
+wizard.lst file in the specified library path(s).Wizard launch aborted
+
+C:/Users/yg585/Desktop/lab2/Mandelbrot-Set-Visualizer/mandelbrot_quartus/28_mouse/video_sram_master_sram_vga/verilog/pll2.v
+
+Feb 28 02PM:52:09>: Megafunction PLL Intel FPGA IP v18.1 is not listed in any 
+wizard.lst file in the specified library path(s).Wizard launch aborted
+
+C:/Users/yg585/Desktop/lab2/Mandelbrot-Set-Visualizer/mandelbrot_quartus/28_mouse/video_sram_master_sram_vga/verilog/pll2.v
+
+Feb 28 02PM:53:20>: Megafunction PLL Intel FPGA IP v18.1 is not listed in any 
+wizard.lst file in the specified library path(s).Wizard launch aborted
+
+C:/Users/yg585/Desktop/lab2/Mandelbrot-Set-Visualizer/mandelbrot_quartus/28_mouse/video_sram_master_sram_vga/verilog/ite_pll.v
+
+Feb 28 05PM:53:21>: Megafunction PLL Intel FPGA IP v18.1 is not listed in any 
+wizard.lst file in the specified library path(s).Wizard launch aborted

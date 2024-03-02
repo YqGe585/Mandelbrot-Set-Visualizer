@@ -1,5 +1,5 @@
 Flow report for DE1_SoC_Computer
-Fri Mar 01 15:33:58 2024
+Fri Mar 01 19:12:26 2024
 Quartus Prime Version 18.1.0 Build 625 09/12/2018 SJ Lite Edition
 
 
@@ -40,7 +40,7 @@ refer to the applicable agreement for further details.
 +-------------------------------------------------------------------------------+
 ; Flow Summary                                                                  ;
 +---------------------------------+---------------------------------------------+
-; Flow Status                     ; Successful - Fri Mar 01 15:33:15 2024       ;
+; Flow Status                     ; Successful - Fri Mar 01 19:12:26 2024       ;
 ; Quartus Prime Version           ; 18.1.0 Build 625 09/12/2018 SJ Lite Edition ;
 ; Revision Name                   ; DE1_SoC_Computer                            ;
 ; Top-level Entity Name           ; DE1_SoC_Computer                            ;
@@ -67,7 +67,7 @@ refer to the applicable agreement for further details.
 +-------------------+---------------------+
 ; Option            ; Setting             ;
 +-------------------+---------------------+
-; Start date & time ; 03/01/2024 15:23:00 ;
+; Start date & time ; 03/01/2024 19:01:35 ;
 ; Main task         ; Compilation         ;
 ; Revision Name     ; DE1_SoC_Computer    ;
 +-------------------+---------------------+
@@ -78,7 +78,7 @@ refer to the applicable agreement for further details.
 +-------------------------------------+-------------------------------------------------------------------------------+---------------+------------------------------------------+------------+
 ; Assignment Name                     ; Value                                                                         ; Default Value ; Entity Name                              ; Section Id ;
 +-------------------------------------+-------------------------------------------------------------------------------+---------------+------------------------------------------+------------+
-; COMPILER_SIGNATURE_ID               ; 211267926428565.170932457715432                                               ; --            ; --                                       ; --         ;
+; COMPILER_SIGNATURE_ID               ; 211267926428565.170933769102176                                               ; --            ; --                                       ; --         ;
 ; ENABLE_SIGNALTAP                    ; On                                                                            ; --            ; --                                       ; --         ;
 ; HPS_ISW_FILE                        ; Computer_System/synthesis/submodules/sequencer/alt_types.pre.h                ; --            ; Computer_System_ARM_A9_HPS_hps_io_border ; --         ;
 ; HPS_ISW_FILE                        ; Computer_System/synthesis/submodules/sequencer/emif.pre.xml                   ; --            ; Computer_System_ARM_A9_HPS_hps_io_border ; --         ;
@@ -145,11 +145,9 @@ refer to the applicable agreement for further details.
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 ; Module Name          ; Elapsed Time ; Average Processors Used ; Peak Virtual Memory ; Total CPU Time (on all processors) ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
-; Analysis & Synthesis ; 00:00:44     ; 5.4                     ; 5367 MB             ; 00:03:14                           ;
-; Fitter               ; 00:06:40     ; 1.4                     ; 8902 MB             ; 00:30:42                           ;
-; Assembler            ; 00:00:12     ; 1.0                     ; 5107 MB             ; 00:00:12                           ;
-; Timing Analyzer      ; 00:00:41     ; 3.7                     ; 6186 MB             ; 00:02:13                           ;
-; Total                ; 00:08:17     ; --                      ; --                  ; 00:36:21                           ;
+; Analysis & Synthesis ; 00:00:43     ; 5.6                     ; 5362 MB             ; 00:03:17                           ;
+; Fitter               ; 00:07:16     ; 1.4                     ; 8865 MB             ; 00:31:02                           ;
+; Total                ; 00:07:59     ; --                      ; --                  ; 00:34:19                           ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 
 
@@ -160,8 +158,6 @@ refer to the applicable agreement for further details.
 +----------------------+------------------+------------+------------+----------------+
 ; Analysis & Synthesis ; en-ec-lph238-50  ; Windows 10 ; 10.0       ; x86_64         ;
 ; Fitter               ; en-ec-lph238-50  ; Windows 10 ; 10.0       ; x86_64         ;
-; Assembler            ; en-ec-lph238-50  ; Windows 10 ; 10.0       ; x86_64         ;
-; Timing Analyzer      ; en-ec-lph238-50  ; Windows 10 ; 10.0       ; x86_64         ;
 +----------------------+------------------+------------+------------+----------------+
 
 
@@ -170,8 +166,7 @@ refer to the applicable agreement for further details.
 ------------
 quartus_map --read_settings_files=on --write_settings_files=off DE1_SoC_Computer -c DE1_SoC_Computer
 quartus_fit --read_settings_files=off --write_settings_files=off DE1_SoC_Computer -c DE1_SoC_Computer
-quartus_asm --read_settings_files=off --write_settings_files=off DE1_SoC_Computer -c DE1_SoC_Computer
-quartus_sta DE1_SoC_Computer -c DE1_SoC_Computer
+quartus_eda --read_settings_files=off --write_settings_files=off DE1_SoC_Computer -c DE1_SoC_Computer
 
 
 
