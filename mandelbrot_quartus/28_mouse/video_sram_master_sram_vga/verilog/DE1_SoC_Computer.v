@@ -602,79 +602,19 @@ generate
 			 case (current_state[i])
 				  2'd0: next_state[i] = 2'd2;
 				  2'd2: next_state[i] = (offset_addr_y[i] > 10'd476) ? 2'd3 : 2'd2;
-				  2'd3: next_state[i] = max_done? 2'd0: 2'd3;
+				  2'd3: next_state[i] = max_done? 2'd0: 2'd3;   // done? wait for all the iterators to be done and get the max counter(28 extra cycles required) --- after that is done go back to state 0
 				  default: next_state[i] = 2'd0;
 			 endcase
 		end
 
 		// output logic
 		always @(posedge CLOCK_150) begin
-			 if (current_state[i] == 2'd0) begin  // reset
+			 if (current_state[i] == 2'd0) begin  // reset state 0 -- all param, every time state machine goes to state 0--  reads all the paramenters form SRAM
 				  vga_x_cood[i] <= 10'b0 ;
 				  vga_y_cood[i] <= 10'b0 ;
 				  offset_addr_x[i] <= 10'b0;
 				  offset_addr_y[i] <= 10'b0;
 				  done[i] <= 1'b0;
-//				  case (i)
-//				  0:begin real_part[i] <= REAL_MIN; // 39321
-//							 imag_part[i] <= IMAG_MAX; end
-//				  1:begin real_part[i] <= REAL_MIN+27'd39321;
-//							 imag_part[i] <= IMAG_MAX; end
-//				  2:begin real_part[i] <= REAL_MIN+27'd78642;
-//							 imag_part[i] <= IMAG_MAX; end
-//				  3:begin real_part[i] <= REAL_MIN+3*x_step;
-//							 imag_part[i] <= IMAG_MAX; end
-//				  4:begin real_part[i] <= REAL_MIN+4*x_step;
-//							 imag_part[i] <= IMAG_MAX; end
-//				  5:begin real_part[i] <= REAL_MIN+5*x_step;
-//							 imag_part[i] <= IMAG_MAX; end
-//				  6:begin real_part[i] <= REAL_MIN+6*x_step;
-//							 imag_part[i] <= IMAG_MAX; end      
-//				  7: begin real_part[i] <= REAL_MIN; // 39321
-//				    		 imag_part[i] <= IMAG_MAX- y_step; end
-//				  8: begin real_part[i] <= REAL_MIN+27'd39321;
-//				    		 imag_part[i] <= IMAG_MAX- y_step; end
-//				  9: begin real_part[i] <= REAL_MIN+27'd78642;
-//				    		 imag_part[i] <= IMAG_MAX- y_step; end
-//				  10:begin real_part[i] <= REAL_MIN+3*x_step;
-//				    		 imag_part[i] <= IMAG_MAX- y_step; end
-//				  11:begin real_part[i] <= REAL_MIN+4*x_step;
-//				    		 imag_part[i] <= IMAG_MAX- y_step; end
-//				  12:begin real_part[i] <= REAL_MIN+5*x_step;
-//				    		 imag_part[i] <= IMAG_MAX- y_step; end
-//				  13:begin real_part[i] <= REAL_MIN+6*x_step;
-//				    		 imag_part[i] <= IMAG_MAX- y_step; end      
-//				  14:begin real_part[i] <= REAL_MIN; // 39321
-//				     	 imag_part[i] <= IMAG_MAX- 2* y_step; end
-//				  15:begin real_part[i] <= REAL_MIN+27'd39321;
-//				     	 imag_part[i] <= IMAG_MAX- 2* y_step; end
-//				  16:begin real_part[i] <= REAL_MIN+27'd78642;
-//				     	 imag_part[i] <= IMAG_MAX- 2*y_step; end
-//				  17:begin real_part[i] <= REAL_MIN+3*x_step;
-//				     	 imag_part[i] <= IMAG_MAX- 2*y_step; end
-//				  18:begin real_part[i] <= REAL_MIN+4*x_step;
-//				     	 imag_part[i] <= IMAG_MAX- 2*y_step; end
-//				  19:begin real_part[i] <= REAL_MIN+5*x_step;
-//				     	 imag_part[i] <= IMAG_MAX- 2*y_step; end
-//				  20:begin real_part[i] <= REAL_MIN+6*x_step;
-//				     	 imag_part[i] <= IMAG_MAX- 2*y_step; end 
-//				  21:begin real_part[i] <= REAL_MIN; // 39321
-//				     	 imag_part[i] <= IMAG_MAX- 3* y_step; end
-//				  22:begin real_part[i] <= REAL_MIN+27'd39321;
-//				     	 imag_part[i] <= IMAG_MAX- 3*y_step; end
-//				  23:begin real_part[i] <= REAL_MIN+27'd78642;
-//				     	 imag_part[i] <= IMAG_MAX- 3*y_step; end
-//				  24:begin real_part[i] <= REAL_MIN+3*x_step;
-//				     	 imag_part[i] <= IMAG_MAX- 3*y_step; end
-//				  25:begin real_part[i] <= REAL_MIN+4*x_step;
-//				     	 imag_part[i] <= IMAG_MAX- 3*y_step; end
-//				  26:begin real_part[i] <= REAL_MIN+5*x_step;
-//				     	 imag_part[i] <= IMAG_MAX- 3*y_step; end
-//				  27:begin real_part[i] <= REAL_MIN+6*x_step;
-//				     	 imag_part[i] <= IMAG_MAX- 3*y_step; end 
-//				  default:begin real_part[i] <= REAL_MIN; // 39321
-//							 imag_part[i] <= IMAG_MAX; end
-//				  endcase 
 				  REAL_MIN <= REAL_MIN_temp;
 				  IMAG_MAX <= IMAG_MAX_temp;
 				  rst_value_real[i] <= REAL_MIN_temp + (i[26:0]%SOLVER_ROW)*x_step;
@@ -694,7 +634,7 @@ generate
 //				  write_color[i] <= pixel_color[i];
 				  //index <= 0;
 			 end
-			 else if (current_state[i] == 2'd2) begin  // waiting for calculation result and write memory
+			 else if (current_state[i] == 2'd2) begin  // waiting for calculation result and write memory wrie all pixel colors and write it to the m10k (state 2)
 //				  sram_address[i] <= 8'd30 ;
 //				  sram_write[i] <= 1'b0 ;
 //				  sram_writedata[i] <= 32'd0 ;
@@ -831,7 +771,7 @@ end
 
 
 // state transition logic
-
+// this state machine is for communication
 always @(*) begin
 	case(current_state2)
 	5'd0: next_state2 = 5'd1;
@@ -870,7 +810,7 @@ end
 always @(posedge CLOCK_50) begin
 	// reading REAL_MIN
 	if(current_state2 == 5'd0) begin
-		sram_address <= 8'd3 ;
+		sram_address <= 8'd3 ; // which address to read st0 , st1 wait st2 read data
 		sram_write <= 1'b0 ;
 	end
 	else if (current_state2 == 5'd1) begin
@@ -930,12 +870,12 @@ always @(posedge CLOCK_50) begin
 	
 	//writing max_counter_hex
 	else if (current_state2 == 5'd15) begin
-		sram_address <= 8'd1 ;
+		sram_address <= 8'd1 ;      // addres, data to be written , and enable
 		sram_write<= 1'b1 ;
 		sram_writedata <= max_counter_hex ;
 	end
 	else if (current_state2 == 5'd16) begin
-	
+	// wait for 1 cycle and write
 	end
 	
 	//writing real_min
@@ -998,7 +938,8 @@ always @(posedge CLOCK_150) begin
 		max_counter <= 0;
 		max_done <= 0 ;
 	end
-	else begin
+	else begin // takes 28 extra cycles to ge thte max counter
+	
 		if(done == 28'hFFFFFFF) begin
 			if(index < NUM_MODULES) begin
 				max_done <= 0 ;
@@ -1312,7 +1253,7 @@ always @(posedge clk) begin
 		  else begin
 		      ite_flag <= 1'b1;
 		  end
-		  
+		  // how we skip the black area
 		  if ((($signed(cr)<=$signed(LEFT_X_MAX)) && ($signed(cr)>=$signed(LEFT_X_MIN)) && ($signed(ci)<=$signed(LEFT_Y_MAX)) && ($signed(ci)>=$signed(LEFT_Y_MIN)) ) ||
 		  (($signed(cr)<=$signed(RIGHT_X_MAX)) && ($signed(cr)>=$signed(RIGHT_X_MIN)) && ($signed(ci)<=$signed(RIGHT_Y_MAX)) && ($signed(ci)>=$signed(RIGHT_Y_MIN)) )) begin
 				skip_flag <= 1'b1;
